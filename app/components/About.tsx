@@ -39,13 +39,13 @@ export default function Works() {
 
       <div className="absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[.4rem] md:tracking-[.25rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-5 lg:text-lg md:text-md text-sm">
         <p className="lg:mb-10 md:mb-10 mb-5">
-          Hello, I'm a software and front-end engineer with a deep passion for
-          design and illustration. I have experience working in various roles,
-          including front-end engineering, design, and illustration.
+          Hello, I&apos;m a software and front-end engineer with a deep passion
+          for design and illustration. I have experience working in various
+          roles, including front-end engineering, design, and illustration.
         </p>
         <p className="mb-10">
-          I recently graduated with a bachelor's degree from Cardiff
-          Metropolitan University, and I'm constantly eager to expand my
+          I recently graduated with a bachelor&apos;s degree from Cardiff
+          Metropolitan University, and I&apos;m constantly eager to expand my
           knowledge and explore new opportunities.
         </p>
 
