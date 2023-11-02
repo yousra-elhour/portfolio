@@ -19,11 +19,15 @@ export default function HeroSection() {
       <div
         className={`relative isolate overflow-hidden ${bhavuka.variable} font-lead `}
       >
-        <Image
-          src={image}
-          alt="background"
+        <video
+          controls={false}
+          loop
+          autoPlay
+          muted
           className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
+        >
+          <source src="/videos/animation.mp4" type="video/mp4" />
+        </video>
         <div
           className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
           aria-hidden="true"
