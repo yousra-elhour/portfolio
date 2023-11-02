@@ -52,7 +52,6 @@ export default function Works() {
         <Link
           href={"/Yousra-Elhour-Resume.pdf"}
           download
-          target="_blank"
           className="pb-2 border-b"
         >
           Curriculum vitae
