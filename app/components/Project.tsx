@@ -84,6 +84,7 @@ export default function Project({
               <Image
                 width={800}
                 height={800}
+                priority={true}
                 src={banner}
                 alt="preview"
                 className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
@@ -131,6 +132,7 @@ export default function Project({
                 <Image
                   width={800}
                   height={800}
+                  priority={true}
                   key={index}
                   src={image}
                   alt={`preview-${index}`}
@@ -188,6 +190,7 @@ export default function Project({
                     height={800}
                     key={index}
                     src={item.img}
+                    priority={true}
                     alt={`preview-${index}`}
                     className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
                   />
@@ -216,6 +219,7 @@ export default function Project({
                   <Image
                     width={800}
                     height={800}
+                    priority={true}
                     key={index}
                     src={image}
                     alt={`preview-${index}`}
