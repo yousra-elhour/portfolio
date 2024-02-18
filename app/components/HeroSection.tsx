@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import image from "../../public/images/aaaaUntitled-1 1.png";
 import localFont from "@next/font/local";
 import Link from "next/link";
 const bhavuka = localFont({

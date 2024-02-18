@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import image from "../../public/images/aaaaUntitled-1 1.png";
 import cardiff from "../../public/images/cmu-blue-logo.gif";
 import Link from "next/link";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MoveUpRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Email from "./Email";
 import Nav from "./Nav";
+import Loading from "./Loading";
 
 export default function Works() {
   const [parent] = useAutoAnimate();
@@ -42,6 +42,50 @@ export default function Works() {
   ];
 
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingPercentage, setLoadingPercentage] = useState(0);
+
+  useEffect(() => {
+    const preloadVideos = async () => {
+      const videoUrls = [
+        "/videos/vinyl-video.mp4",
+        "/videos/nature-housing.mp4",
+        "/videos/AdmissionPedia.mp4",
+      ];
+
+      try {
+        let loadedVideos = 0;
+        const totalVideos = videoUrls.length;
+
+        const videoPromises = videoUrls.map((url) => {
+          return new Promise<void>((resolve, reject) => {
+            const video = document.createElement("video");
+            video.src = url;
+            video.load();
+            video.onloadedmetadata = () => {
+              loadedVideos++;
+              setLoadingPercentage((loadedVideos / totalVideos) * 100);
+              resolve();
+            };
+            video.onerror = reject;
+          });
+        });
+
+        await Promise.all(videoPromises);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error preloading videos:", error);
+      }
+    };
+
+    preloadVideos();
+  }, []);
+
+  if (isLoading) {
+    // Render a loading state while images are preloading
+    return <Loading loadingPercentage={loadingPercentage} />;
+  }
+
   return (
     <>
       <div className="relative overflow-hidden " ref={parent}>
@@ -51,7 +95,10 @@ export default function Works() {
         <div className="bg-gray-900">
           <div className={`relative isolate overflow-hidden  font-lead `}>
             <Image
-              src={image}
+              src="/images/aaaaUntitled-1 1.png"
+              width={500}
+              height={500}
+              priority // optional prop, if needed
               alt="background"
               className="absolute inset-0 -z-10 h-full w-full object-cover"
             />

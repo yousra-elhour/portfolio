@@ -52,6 +52,8 @@ export default function Project({
           <div className={`relative isolate overflow-hidden  font-lead `}>
             <Image
               src={image}
+              placeholder="blur"
+              quality={100}
               alt="background"
               className="absolute inset-0 -z-10 h-full w-full object-cover"
             />
