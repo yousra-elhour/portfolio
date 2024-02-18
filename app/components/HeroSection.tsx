@@ -2,6 +2,8 @@
 
 import localFont from "@next/font/local";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import Loading from "./Loading";
 const bhavuka = localFont({
   src: [
     {
@@ -12,6 +14,45 @@ const bhavuka = localFont({
 });
 
 export default function HeroSection() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingPercentage, setLoadingPercentage] = useState(0);
+  useEffect(() => {
+    const preloadVideos = async () => {
+      const videoUrls = ["/videos/animation.mp4"];
+
+      try {
+        let loadedVideos = 0;
+        const totalVideos = videoUrls.length;
+
+        const videoPromises = videoUrls.map((url) => {
+          return new Promise<void>((resolve, reject) => {
+            const video = document.createElement("video");
+            video.src = url;
+            video.load();
+            video.onloadedmetadata = () => {
+              loadedVideos++;
+              setLoadingPercentage((loadedVideos / totalVideos) * 100);
+              resolve();
+            };
+            video.onerror = reject;
+          });
+        });
+
+        await Promise.all(videoPromises);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error preloading videos:", error);
+      }
+    };
+
+    preloadVideos();
+  }, []);
+
+  if (isLoading) {
+    // Render a loading state while images are preloading
+    return <Loading loadingPercentage={loadingPercentage} />;
+  }
+
   return (
     <div className="bg-gray-900">
       <div
