@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat, Marcellus_SC } from "next/font/google";
 import "./globals.css";
 import Client from "./components/Client";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: "300" });
 const marcellus = Marcellus_SC({
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${marcellus.className} ${montserrat.className}`}>
         <Client>{children}</Client>
+        <SpeedInsights />
       </body>
     </html>
   );
