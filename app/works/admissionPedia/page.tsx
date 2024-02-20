@@ -56,10 +56,10 @@ export default function WorksPage() {
           images={[
             "/images/admissionPedia/main.png",
             "/images/admissionPedia/Search.png",
-            "/images/admissionPedia/Add School.png",
+            "/images/admissionPedia/Addschool.png",
             "/images/admissionPedia/User dashboard.png",
             "/images/admissionPedia/Sign up.png",
-            "/images/admissionPedia/School Page.png",
+            "/images/admissionPedia/School page.png",
             "/images/admissionPedia/add-school.png",
           ]}
           banner={"/images/admissionPedia/banner.jpg"}
