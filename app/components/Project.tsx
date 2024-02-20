@@ -53,7 +53,7 @@ export default function Project({
             <Image
               src={image}
               placeholder="blur"
-              quality={100}
+              quality={30}
               alt="background"
               className="absolute inset-0 -z-10 h-full w-full object-cover"
             />

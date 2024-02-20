@@ -4,6 +4,7 @@ import Loading from "@/app/components/Loading";
 import { PageWrapper } from "../../components/PageWrapper";
 import Project from "../../components/Project";
 import { useEffect, useState } from "react";
+import Previous from "@/app/components/Previous";
 
 export default function WorksPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +72,7 @@ export default function WorksPage() {
           `}
         />
       </PageWrapper>
+      <Previous />
     </>
   );
 }

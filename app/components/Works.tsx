@@ -8,83 +8,39 @@ import { MoveUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import Email from "./Email";
 import Nav from "./Nav";
-import Loading from "./Loading";
 
 export default function Works() {
   const [parent] = useAutoAnimate();
   const data = [
     {
       title: "Vinyl E-commerce & CMS",
-      video: "/videos/vinyl-video.mp4",
+      image: "/images/vinyl-banner.png",
       link: "/works/vinyl",
       live: "https://vinyl-client-omega.vercel.app",
     },
 
     {
       title: "Nature Housing",
-      video: "/videos/nature-housing.mp4",
+      image: "/images/nature-banner.png",
       link: "/works/nature-housing",
       live: "https://nature-housing.netlify.app",
     },
 
     {
       title: "AdmissionPedia",
-      video: "/videos/AdmissionPedia.mp4",
+      image: "/images/admissionPedia/banner.jpg",
       link: "/works/admissionPedia",
       live: "https://admissionpedia.dev",
     },
 
     {
       title: "University Projects",
-      image: "https://www.cardiffmet.ac.uk/SiteAssets/cmu/cmu-blue-logo.gif",
+      image: "/images/cmu-blue-logo.gif",
       link: "/works/university-projects",
     },
   ];
 
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingPercentage, setLoadingPercentage] = useState(0);
-
-  useEffect(() => {
-    const preloadVideos = async () => {
-      const videoUrls = [
-        "/videos/vinyl-video.mp4",
-        "/videos/nature-housing.mp4",
-        "/videos/AdmissionPedia.mp4",
-      ];
-
-      try {
-        let loadedVideos = 0;
-        const totalVideos = videoUrls.length;
-
-        const videoPromises = videoUrls.map((url) => {
-          return new Promise<void>((resolve, reject) => {
-            const video = document.createElement("video");
-            video.src = url;
-            video.load();
-            video.onloadedmetadata = () => {
-              loadedVideos++;
-              setLoadingPercentage((loadedVideos / totalVideos) * 100);
-              resolve();
-            };
-            video.onerror = reject;
-          });
-        });
-
-        await Promise.all(videoPromises);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error preloading videos:", error);
-      }
-    };
-
-    preloadVideos();
-  }, []);
-
-  if (isLoading) {
-    // Render a loading state while images are preloading
-    return <Loading loadingPercentage={loadingPercentage} />;
-  }
 
   return (
     <>
@@ -98,6 +54,7 @@ export default function Works() {
               src="/images/aaaaUntitled-1 1.png"
               width={500}
               height={500}
+              quality={30}
               priority // optional prop, if needed
               alt="background"
               className="absolute inset-0 -z-10 h-full w-full object-cover"
@@ -154,26 +111,12 @@ export default function Works() {
             className="absolute bottom-[-3%] right-[-7%] h-[29cqw] aspect-video z-40 lg:block hidden preview "
             style={{ transition: "all 2s" }}
           >
-            {data[hoveredItem].video && (
-              <video
-                width="750"
-                height="500"
-                controls={false}
-                loop
-                autoPlay
-                muted
-                className="absolute inset-0 z-30 h-full w-full object-cover rounded-xl"
-              >
-                <source src={data[hoveredItem].video} type="video/mp4" />
-              </video>
-            )}
-
             {data[hoveredItem].image && (
               <Image
-                width={750}
-                height={500}
-                alt="uni"
-                src={cardiff}
+                width="750"
+                height="500"
+                src={data[hoveredItem].image}
+                alt={data[hoveredItem].title}
                 className="absolute inset-0 z-30 h-full w-full object-cover rounded-xl"
               />
             )}

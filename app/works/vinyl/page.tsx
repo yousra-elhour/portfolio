@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { PageWrapper } from "../../components/PageWrapper";
 import Project from "../../components/Project";
 import Loading from "@/app/components/Loading";
+import Previous from "@/app/components/Previous";
 
 export default function WorksPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -79,6 +80,7 @@ export default function WorksPage() {
           website Contact me if you're interested in testing it."
         />
       </PageWrapper>
+      <Previous />
     </>
   );
 }
