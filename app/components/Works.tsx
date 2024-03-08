@@ -51,7 +51,7 @@ export default function Works() {
         <div className="bg-gray-900">
           <div className={`relative isolate overflow-hidden  font-lead `}>
             <Image
-              src="/images/aaaaUntitled-1 1.png"
+              src="/images/aaaaUntitled-1 1.jpg"
               width={500}
               height={500}
               quality={30}

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import image from "../../public/images/aaaaUntitled-1 1.png";
+import image from "../../public/images/aaaaUntitled-1 1.jpg";
 import Link from "next/link";
 import Email from "./Email";
 import Nav from "./Nav";
