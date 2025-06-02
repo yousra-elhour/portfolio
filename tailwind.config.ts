@@ -18,6 +18,7 @@ const config: Config = {
         lead: ["var(--font-bhavuka)"],
         sans: ["Monsterrat", "Arial", "sans-serif"],
         title: ["var(--font-title)"],
+        pixelify: ["var(--font-pixelify)"],
       },
     },
   },

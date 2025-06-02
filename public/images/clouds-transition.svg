@@ -1,0 +1,17 @@
+
+<svg width="1920" height="600" viewBox="0 0 1920 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1920" height="600" fill="url(#paint0_linear)" />
+  <path d="M0,600 L1920,600 L1920,300 
+           C1800,350 1700,320 1600,380 
+           C1450,320 1300,350 1150,300 
+           C1000,340 850,310 700,380 
+           C550,320 400,350 250,300 
+           C100,340 0,320 0,400 Z" 
+           fill="white" fill-opacity="0.7" />
+  <defs>
+    <linearGradient id="paint0_linear" x1="960" y1="0" x2="960" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0" />
+      <stop offset="1" stop-color="white" stop-opacity="0.3" />
+    </linearGradient>
+  </defs>
+</svg>
