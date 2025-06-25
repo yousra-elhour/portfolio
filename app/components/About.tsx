@@ -44,18 +44,19 @@ export default function Works() {
           roles, including front-end engineering, design, and illustration.
         </p>
         <p className="mb-10">
-          I recently graduated with a bachelor&apos;s degree from Cardiff
-          Metropolitan University, and I&apos;m constantly eager to expand my
-          knowledge and explore new opportunities.
+          I&apos;m currently doing my master&apos;s in software engineering in
+          Paris, and I&apos;m constantly eager to expand my knowledge and
+          explore new opportunities.
         </p>
 
-        <Link
-          href={"/Yousra-Elhour-Resume.pdf"}
-          download
-          className="pb-2 border-b"
-        >
-          Curriculum vitae
-        </Link>
+        <div className="flex gap-8 items-center">
+          <Link href={"/CV-english.pdf"} download className="pb-2 border-b">
+            CV English
+          </Link>
+          <Link href={"/cv-main.pdf"} download className="pb-2 border-b">
+            CV Français
+          </Link>
+        </div>
       </div>
       <Email />
       <Nav />

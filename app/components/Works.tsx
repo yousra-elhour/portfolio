@@ -34,6 +34,12 @@ export default function Works() {
     },
 
     {
+      title: "Illustrations",
+      image: "/images/illustrator/cirrus-yk-cyberpunk-final-fullres.jpg",
+      link: "/works/illustrations",
+    },
+
+    {
       title: "University Projects",
       image: "/images/cmu-blue-logo.gif",
       link: "/works/university-projects",
