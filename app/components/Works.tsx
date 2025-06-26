@@ -20,13 +20,6 @@ export default function Works() {
     },
 
     {
-      title: "Nature Housing",
-      image: "/images/nature-banner.png",
-      link: "/works/nature-housing",
-      live: "https://nature-housing.netlify.app",
-    },
-
-    {
       title: "AdmissionPedia",
       image: "/images/admissionPedia/banner.jpg",
       link: "/works/admissionPedia",
@@ -37,6 +30,13 @@ export default function Works() {
       title: "Illustrations",
       image: "/images/illustrator/cirrus-yk-cyberpunk-final-fullres.jpg",
       link: "/works/illustrations",
+    },
+
+    {
+      title: "Nature Housing",
+      image: "/images/nature-banner.png",
+      link: "/works/nature-housing",
+      live: "https://nature-housing.netlify.app",
     },
 
     {

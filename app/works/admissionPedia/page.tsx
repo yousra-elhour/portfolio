@@ -19,7 +19,7 @@ export default function WorksPage() {
             "/images/admissionPedia/add-school.png",
           ]}
           banner={"/images/admissionPedia/banner.jpg"}
-          live="https://admissionpedia.dev/"
+          live="https://admissionpedia-2-0.vercel.app/"
           design="https://www.behance.net/gallery/183533805/AdmissionPedia-Design"
           title={"AdmissionPedia"}
           techStack={"React, NodeJS, Tailwind, SQL"}
