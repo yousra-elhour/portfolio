@@ -23,13 +23,7 @@ export default function Works() {
       title: "AdmissionPedia",
       image: "/images/admissionPedia/banner.jpg",
       link: "/works/admissionPedia",
-      live: "https://admissionpedia.dev",
-    },
-
-    {
-      title: "Illustrations",
-      image: "/images/illustrator/cirrus-yk-cyberpunk-final-fullres.jpg",
-      link: "/works/illustrations",
+      live: "https://admissionpedia-2-0.vercel.app/",
     },
 
     {
@@ -37,6 +31,12 @@ export default function Works() {
       image: "/images/nature-banner.png",
       link: "/works/nature-housing",
       live: "https://nature-housing.netlify.app",
+    },
+
+    {
+      title: "Illustrations",
+      image: "/images/illustrator/cirrus-yk-cyberpunk-final-fullres.jpg",
+      link: "/works/illustrations",
     },
 
     {
