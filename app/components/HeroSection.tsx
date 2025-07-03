@@ -31,28 +31,28 @@ export default function HeroSection() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center lg:gap-x-8 md:gap-x-6 gap-x-4 pt-2">
+            <div className="flex items-center justify-center gap-x-2 sm:gap-x-4 md:gap-x-6 lg:gap-x-8 pt-2 px-2 sm:px-0">
               <Link
                 href="/about"
-                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-8 py-3 transition-all duration-300 hover:scale-105"
+                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3 transition-all duration-300 hover:scale-105 text-center"
               >
-                <span className="relative z-10 lg:text-sm md:text-sm text-xs font-medium tracking-widest text-white">
+                <span className="relative z-10 text-xs sm:text-sm md:text-sm lg:text-sm font-medium tracking-widest text-white">
                   ABOUT ME
                 </span>
               </Link>
               <Link
                 href="/works"
-                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-8 py-3 transition-all duration-300 hover:scale-105"
+                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3 transition-all duration-300 hover:scale-105 text-center"
               >
-                <span className="relative z-10 lg:text-sm md:text-sm text-xs font-medium tracking-widest text-white">
+                <span className="relative z-10 text-xs sm:text-sm md:text-sm lg:text-sm font-medium tracking-widest text-white">
                   WORKS
                 </span>
               </Link>
               <Link
                 href="/contact"
-                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-8 py-3 transition-all duration-300 hover:scale-105"
+                className="group relative overflow-hidden bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-3 py-2 sm:px-6 sm:py-3 md:px-8 md:py-3 transition-all duration-300 hover:scale-105 text-center"
               >
-                <span className="relative z-10 lg:text-sm md:text-sm text-xs font-medium tracking-widest text-white">
+                <span className="relative z-10 text-xs sm:text-sm md:text-sm lg:text-sm font-medium tracking-widest text-white">
                   CONTACT
                 </span>
               </Link>
