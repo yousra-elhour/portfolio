@@ -91,22 +91,22 @@ export default function Works() {
               onMouseLeave={() => setHoveredItem(null)}
               className=" cursor-pointer"
             >
-              <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20">
+              <div className="flex justify-between items-start gap-4 sm:gap-6 md:gap-8 lg:gap-12 xl:gap-16 2xl:gap-20 mb-3 sm:mb-4 md:mb-5 lg:mb-6 xl:mb-7">
                 <Link
                   href={item.link}
-                  className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em]  "
+                  className="text-xs sm:text-xs md:text-sm lg:text-lg xl:text-xl 2xl:text-2xl font-sans tracking-[.1em] sm:tracking-[.15em] md:tracking-[.2em] lg:tracking-[.25em] xl:tracking-[.35em] 2xl:tracking-[.4em] pl-1 sm:pl-1 md:pl-2 lg:pl-3 xl:pl-4"
                 >
                   {item.title}
                 </Link>
 
                 {item.live && (
                   <Link target="_blank" href={item.live}>
-                    <MoveUpRight className="lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50" />
+                    <MoveUpRight className="h-3 w-3 sm:h-3 sm:w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 z-50 flex-shrink-0" />
                   </Link>
                 )}
               </div>
 
-              <hr className="border-0 border-white border-b w-full mb-12" />
+              <hr className="border-0 border-white border-b w-full mb-4 sm:mb-5 md:mb-6 lg:mb-8 xl:mb-10 2xl:mb-12" />
             </div>
           ))}
         </div>
@@ -114,7 +114,7 @@ export default function Works() {
 
         {hoveredItem !== null && (
           <div
-            className="absolute bottom-[-3%] right-[-7%] h-[29cqw] aspect-video z-40 lg:block hidden preview "
+            className="absolute bottom-[-3%] right-[-7%] h-[29cqw] aspect-video z-40 hidden lg:block preview"
             style={{ transition: "all 2s" }}
           >
             {data[hoveredItem].image && (
