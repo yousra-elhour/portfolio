@@ -20,6 +20,13 @@ export default function Works() {
     },
 
     {
+      title: "AdmissionPedia",
+      image: "/images/admissionPedia/banner.jpg",
+      link: "/works/admissionPedia",
+      live: "https://admissionpedia-2-0.vercel.app/",
+    },
+
+    {
       title: "Nature Housing",
       image: "/images/nature-banner.png",
       link: "/works/nature-housing",
@@ -27,10 +34,10 @@ export default function Works() {
     },
 
     {
-      title: "AdmissionPedia",
-      image: "/images/admissionPedia/banner.jpg",
-      link: "/works/admissionPedia",
-      live: "https://admissionpedia.dev",
+      title: "Digital Illustrations",
+      image: "/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg",
+      link: "/works/illustrations",
+      live: "https://www.artstation.com/cirrusyk",
     },
 
     {

@@ -39,23 +39,30 @@ export default function Works() {
 
       <div className="absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[.4rem] md:tracking-[.25rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-5 lg:text-lg md:text-md text-sm">
         <p className="lg:mb-10 md:mb-10 mb-5">
-          Hello, I&apos;m a software and front-end engineer with a deep passion
-          for design and illustration. I have experience working in various
-          roles, including front-end engineering, design, and illustration.
+          Hello! I&apos;m a software and front-end engineer with a strong
+          passion for both development and design. I&apos;ve worked across
+          different creative and technical roles from front-end development to
+          digital art blending aesthetics with functionality.
         </p>
         <p className="mb-10">
-          I recently graduated with a bachelor&apos;s degree from Cardiff
-          Metropolitan University, and I&apos;m constantly eager to expand my
-          knowledge and explore new opportunities.
+          I hold a bachelor&apos;s degree I&apos;m currently pursuing my
+          master&apos;s in France. I love building websites that not only work
+          seamlessly but also stand out through eye-catching design. I&apos;m
+          always eager to learn, grow, and take on exciting new challenges.
         </p>
 
-        <Link
-          href={"/Yousra-Elhour-Resume.pdf"}
-          download
-          className="pb-2 border-b"
-        >
-          Curriculum vitae
-        </Link>
+        <div className="flex gap-8">
+          <Link href={"/CV-english.pdf"} download className="pb-2 border-b">
+            English CV
+          </Link>
+          <Link
+            href={"/cv-francais (1).pdf"}
+            download
+            className="pb-2 border-b"
+          >
+            French CV
+          </Link>
+        </div>
       </div>
       <Email />
       <Nav />
