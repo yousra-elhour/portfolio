@@ -95,19 +95,19 @@ export default function Works() {
               <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20">
                 <Link
                   href={item.link}
-                  className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em]  "
+                  className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em] works-title"
                 >
                   {item.title}
                 </Link>
 
                 {item.live && (
                   <Link target="_blank" href={item.live}>
-                    <MoveUpRight className="lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50" />
+                    <MoveUpRight className="lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50 works-icon" />
                   </Link>
                 )}
               </div>
 
-              <hr className="border-0 border-white border-b w-full mb-12" />
+              <hr className="border-0 border-white border-b w-full mb-12 works-divider" />
             </div>
           ))}
         </div>

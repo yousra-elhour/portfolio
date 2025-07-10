@@ -37,14 +37,14 @@ export default function Works() {
         </div>
       </div>
 
-      <div className="absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[.4rem] md:tracking-[.25rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-5 lg:text-lg md:text-md text-sm">
-        <p className="lg:mb-10 md:mb-10 mb-5">
+      <div className="absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[.4rem] md:tracking-[.25rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-5 lg:text-lg md:text-md text-sm about-content">
+        <p className="lg:mb-10 md:mb-10 mb-5 about-paragraph">
           Hello! I&apos;m a software and front-end engineer with a strong
           passion for both development and design. I&apos;ve worked across
           different creative and technical roles from front-end development to
           digital art blending aesthetics with functionality.
         </p>
-        <p className="mb-10">
+        <p className="mb-10 about-paragraph">
           I hold a bachelor&apos;s degree I&apos;m currently pursuing my
           master&apos;s in France. I love building websites that not only work
           seamlessly but also stand out through eye-catching design. I&apos;m

@@ -32,9 +32,104 @@ body::-webkit-scrollbar {
   }
 }
 
+/* Targeted fix for screens 1400px and below (like 1280px laptops) */
+@media (max-width: 1400px) {
+  /* Works component - smaller text and spacing */
+  .works-title {
+    font-size: 1.25rem !important; /* Smaller than lg:text-2xl */
+    letter-spacing: 0.15em !important; /* Much less than .4em */
+    padding-left: 0.75rem !important;
+  }
+
+  .works-icon {
+    height: 1.25rem !important;
+    width: 1.25rem !important;
+  }
+
+  .works-divider {
+    margin-bottom: 2rem !important; /* Smaller than mb-12 */
+  }
+
+  /* Hero section - smaller text and spacing */
+  .hero-title {
+    font-size: 3rem !important; /* Smaller than lg:text-7xl */
+    letter-spacing: 0.15em !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1.5rem !important;
+    letter-spacing: 0.1em !important;
+    margin-top: 1rem !important;
+  }
+
+  .hero-nav {
+    margin-top: 1.5rem !important;
+    gap: 1.5rem !important;
+    letter-spacing: 0.15em !important;
+  }
+
+  .hero-link {
+    font-size: 0.875rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* About section - smaller text and spacing */
+  .about-content {
+    font-size: 0.875rem !important;
+    letter-spacing: 0.1em !important;
+    line-height: 1.4 !important;
+  }
+
+  .about-paragraph {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Contact section - smaller text and spacing */
+  .contact-content {
+    font-size: 0.875rem !important;
+    letter-spacing: 0.15em !important;
+    line-height: 1.4 !important;
+  }
+
+  .contact-title {
+    font-size: 1.875rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .contact-divider {
+    margin-bottom: 1rem !important;
+  }
+
+  .contact-label,
+  .contact-text,
+  .contact-list {
+    font-size: 0.75rem !important;
+  }
+
+  .contact-icon {
+    height: 0.875rem !important;
+    width: 0.875rem !important;
+  }
+
+  /* Better positioning for smaller laptops */
+  .works {
+    left: 6% !important;
+    right: 6%;
+    top: 12% !important;
+  }
+}
+
 @media (max-width: 1155px) {
   .preview {
     height: 25cqw;
+  }
+}
+
+@media (max-width: 1024px) {
+  .preview {
+    height: 22cqw;
   }
 }
 

@@ -40,29 +40,29 @@ export default function HeroSection() {
         </div>
         <div className="mx-auto max-w-3xl h-screen flex flex-col justify-center items-center lg:px-6 md:px-4 sm:px-2 px-2 ">
           <div className="text-center">
-            <h1 className=" lg:text-7xl md:text-6xl sm:text-3xl text-3xl tracking-[.3em] font-bold  text-white pb-4 ">
+            <h1 className="lg:text-7xl md:text-6xl sm:text-3xl text-3xl tracking-[.3em] font-bold text-white pb-4 hero-title">
               Yousra Elhour
             </h1>
-            <p className="lg:mt-6 md:mt-4 lg:text-3xl md:text-2xl sm:text-lg text-lg leading-8 tracking-[.2em] text-gray-300 ">
+            <p className="lg:mt-6 md:mt-4 lg:text-3xl md:text-2xl sm:text-lg text-lg leading-8 tracking-[.2em] text-gray-300 hero-subtitle">
               Software Engineer - Designer - Illustrator
             </p>
-            <div className="lg:mt-9 mt-5 flex items-center justify-center lg:gap-x-12 md:gap-x-6 sm:gap-x-4 gap-x-4 font-sans font-light lg:tracking-[.4em] md:tracking-[.3em] tracking-[.2em] ">
+            <div className="lg:mt-9 mt-5 flex items-center justify-center lg:gap-x-12 md:gap-x-6 sm:gap-x-4 gap-x-4 font-sans font-light lg:tracking-[.4em] md:tracking-[.3em] tracking-[.2em] hero-nav">
               <Link
                 href="/about"
-                className=" border-b-2 lg:text-lg md:text-md text-xs   lg:py-2.5  py-2 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
+                className="border-b-2 lg:text-lg md:text-md text-xs lg:py-2.5 py-2 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hero-link"
               >
                 ABOUT ME
               </Link>
               <Link
                 href="/works"
-                className=" border-b-2 lg:text-lg md:text-md text-xs    lg:py-2.5  py-2   text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
+                className="border-b-2 lg:text-lg md:text-md text-xs lg:py-2.5 py-2 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hero-link"
               >
                 WORKS
               </Link>
 
               <Link
                 href="/contact"
-                className=" border-b-2 lg:text-lg md:text-md text-xs    lg:py-2.5  py-2   text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
+                className="border-b-2 lg:text-lg md:text-md text-xs lg:py-2.5 py-2 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 hero-link"
               >
                 CONTACT
               </Link>
