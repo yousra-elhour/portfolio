@@ -51,11 +51,11 @@ body::-webkit-scrollbar {
     margin-bottom: 1.5rem !important; /* Smaller spacing between HR and text */
   }
 
-  /* Fix the layout for smaller screens - remove justify-between behavior */
+  /* Keep justify-between but control the container width */
   .works-item-container {
-    /* justify-content: flex-start !important;  Override justify-between */
-    gap: 0.25rem !important; /* Very small gap so arrow is right at end of text */
-    max-width: fit-content !important; /* Container should only take needed space */
+    justify-content: space-between !important; /* Keep arrow at end of line */
+    width: 450px !important; /* Fixed width to match HR line */
+    max-width: 450px !important; /* Consistent with HR width */
   }
 
   .works-item-container .works-title {
