@@ -92,7 +92,7 @@ export default function Works() {
               onMouseLeave={() => setHoveredItem(null)}
               className=" cursor-pointer"
             >
-              <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20">
+              <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20 works-item-container">
                 <Link
                   href={item.link}
                   className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em] works-title"

@@ -34,11 +34,12 @@ body::-webkit-scrollbar {
 
 /* Targeted fix for screens 1400px and below (like 1280px laptops) */
 @media (max-width: 1400px) {
-  /* Works component - smaller text and spacing */
+  /* Works component - smaller text and spacing with proper layout */
   .works-title {
     font-size: 1.25rem !important; /* Smaller than lg:text-2xl */
     letter-spacing: 0.15em !important; /* Much less than .4em */
     padding-left: 0.75rem !important;
+    max-width: fit-content !important; /* Prevent stretching */
   }
 
   .works-icon {
@@ -48,6 +49,17 @@ body::-webkit-scrollbar {
 
   .works-divider {
     margin-bottom: 2rem !important; /* Smaller than mb-12 */
+  }
+
+  /* Fix the gap issue for smaller screens */
+  .works-item-container {
+    gap: 1rem !important; /* Much smaller gap than gap-20 */
+    max-width: 100% !important;
+  }
+
+  .works-item-container .works-title {
+    flex-shrink: 0 !important; /* Prevent title from shrinking */
+    white-space: nowrap !important; /* Keep titles on one line */
   }
 
   /* Hero section - smaller text and spacing */
@@ -75,15 +87,15 @@ body::-webkit-scrollbar {
     padding-bottom: 0.5rem !important;
   }
 
-  /* About section - smaller text and spacing */
+  /* About section - slightly bigger text for better readability */
   .about-content {
-    font-size: 0.875rem !important;
-    letter-spacing: 0.1em !important;
-    line-height: 1.4 !important;
+    font-size: 1rem !important; /* Increased from 0.875rem */
+    letter-spacing: 0.12em !important;
+    line-height: 1.5 !important; /* Increased line height */
   }
 
   .about-paragraph {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 1.75rem !important; /* Slightly more spacing */
   }
 
   /* Contact section - smaller text and spacing */
