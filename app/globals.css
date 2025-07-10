@@ -53,7 +53,7 @@ body::-webkit-scrollbar {
 
   /* Fix the layout for smaller screens - remove justify-between behavior */
   .works-item-container {
-    justify-content: flex-start !important; /* Override justify-between */
+    /* justify-content: flex-start !important;  Override justify-between */
     gap: 0.25rem !important; /* Very small gap so arrow is right at end of text */
     max-width: fit-content !important; /* Container should only take needed space */
   }
