@@ -32,8 +32,8 @@ body::-webkit-scrollbar {
   }
 }
 
-/* Targeted fix for screens 1400px and below (like 1280px laptops) */
-@media (max-width: 1400px) {
+/* Targeted fix for screens between 1400px and 769px (laptops like brother's, not phones) */
+@media (max-width: 1400px) and (min-width: 769px) {
   /* Works component - smaller text and spacing with proper layout */
   .works-title {
     font-size: 1.25rem !important; /* Smaller than lg:text-2xl */
@@ -48,7 +48,7 @@ body::-webkit-scrollbar {
   }
 
   .works-divider {
-    margin-bottom: 2rem !important; /* Smaller than mb-12 */
+    margin-bottom: 1.5rem !important; /* Smaller spacing between HR and text */
   }
 
   /* Fix the layout for smaller screens - remove justify-between behavior */
@@ -63,17 +63,17 @@ body::-webkit-scrollbar {
     white-space: nowrap !important; /* Keep titles on one line */
   }
 
-  /* Control each works item to be compact */
+  /* Control each works item but allow wider HR lines */
   .works-item {
-    max-width: fit-content !important; /* Each work item only takes needed space */
+    max-width: 450px !important; /* Allow wider container for HR lines */
     display: block !important;
   }
 
-  /* Make hr lines only as wide as the text content */
+  /* Make hr lines wider like original design but not full width */
   .works-divider {
-    margin-bottom: 2rem !important;
-    width: 100% !important; /* Takes width of parent container */
-    max-width: 250px !important; /* Compact width that matches text + arrow */
+    width: 100% !important;
+    max-width: 450px !important; /* Wider like original but controlled */
+    min-width: 300px !important; /* Ensure minimum width */
   }
 
   /* Hero section - smaller text and spacing */
