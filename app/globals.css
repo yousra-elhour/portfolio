@@ -54,13 +54,26 @@ body::-webkit-scrollbar {
   /* Fix the layout for smaller screens - remove justify-between behavior */
   .works-item-container {
     justify-content: flex-start !important; /* Override justify-between */
-    gap: 1rem !important; /* Much smaller gap than gap-20 */
+    gap: 0.25rem !important; /* Very small gap so arrow is right at end of text */
     max-width: fit-content !important; /* Container should only take needed space */
   }
 
   .works-item-container .works-title {
     flex-shrink: 0 !important; /* Prevent title from shrinking */
     white-space: nowrap !important; /* Keep titles on one line */
+  }
+
+  /* Control each works item to be compact */
+  .works-item {
+    max-width: fit-content !important; /* Each work item only takes needed space */
+    display: block !important;
+  }
+
+  /* Make hr lines only as wide as the text content */
+  .works-divider {
+    margin-bottom: 2rem !important;
+    width: 100% !important; /* Takes width of parent container */
+    max-width: 250px !important; /* Compact width that matches text + arrow */
   }
 
   /* Hero section - smaller text and spacing */

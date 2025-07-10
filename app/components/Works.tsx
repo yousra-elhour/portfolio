@@ -90,7 +90,7 @@ export default function Works() {
               key={index}
               onMouseEnter={() => setHoveredItem(index)}
               onMouseLeave={() => setHoveredItem(null)}
-              className=" cursor-pointer"
+              className="cursor-pointer works-item"
             >
               <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20 works-item-container">
                 <Link
