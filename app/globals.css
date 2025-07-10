@@ -51,10 +51,11 @@ body::-webkit-scrollbar {
     margin-bottom: 2rem !important; /* Smaller than mb-12 */
   }
 
-  /* Fix the gap issue for smaller screens */
+  /* Fix the layout for smaller screens - remove justify-between behavior */
   .works-item-container {
+    justify-content: flex-start !important; /* Override justify-between */
     gap: 1rem !important; /* Much smaller gap than gap-20 */
-    max-width: 100% !important;
+    max-width: fit-content !important; /* Container should only take needed space */
   }
 
   .works-item-container .works-title {
