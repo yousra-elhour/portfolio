@@ -20,6 +20,39 @@ const config: Config = {
         title: ["var(--font-title)"],
         pixelify: ["var(--font-pixelify)"],
       },
+      
+      animation: {
+        'float-slow': 'float-slow 15s ease-in-out infinite',
+        'float-medium': 'float-medium 18s ease-in-out infinite',
+        'float-fast': 'float-fast 12s ease-in-out infinite',
+      },
+      
+      keyframes: {
+        'float-slow': {
+          '0%, 100%': {
+            transform: 'translateX(-60px) translateY(0px) scale(1.15)',
+          },
+          '50%': {
+            transform: 'translateX(60px) translateY(-30px) scale(1.15)',
+          },
+        },
+        'float-medium': {
+          '0%, 100%': {
+            transform: 'translateX(-80px) translateY(-15px) scale(1.2)',
+          },
+          '50%': {
+            transform: 'translateX(80px) translateY(15px) scale(1.2)',
+          },
+        },
+        'float-fast': {
+          '0%, 100%': {
+            transform: 'translateX(-100px) translateY(0px) scale(1.25)',
+          },
+          '50%': {
+            transform: 'translateX(100px) translateY(-40px) scale(1.25)',
+          },
+        },
+      },
     },
   },
   plugins: [],

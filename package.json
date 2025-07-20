@@ -11,14 +11,17 @@
   "dependencies": {
     "@formkit/auto-animate": "^0.8.0",
     "@next/font": "^13.5.5",
+    "@types/three": "^0.178.1",
     "@vercel/speed-insights": "^1.0.10",
     "canvas": "^3.1.0",
     "classnames": "^2.3.2",
     "framer-motion": "^10.16.4",
+    "gsap": "^3.13.0",
     "lucide-react": "^0.288.0",
     "next": "13.5.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "three": "^0.178.0"
   },
   "devDependencies": {
     "@types/node": "^20",
