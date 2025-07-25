@@ -62,31 +62,3 @@ body::-webkit-scrollbar {
 .projects::-webkit-scrollbar-track {
   background-color: transparent;
 }
-
-/* Cloud Animation Keyframes */
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateX(-60px) translateY(0px) scale(1.15);
-  }
-  50% {
-    transform: translateX(60px) translateY(-30px) scale(1.15);
-  }
-}
-
-@keyframes float-medium {
-  0%, 100% {
-    transform: translateX(-80px) translateY(-15px) scale(1.2);
-  }
-  50% {
-    transform: translateX(80px) translateY(15px) scale(1.2);
-  }
-}
-
-@keyframes float-fast {
-  0%, 100% {
-    transform: translateX(-100px) translateY(0px) scale(1.25);
-  }
-  50% {
-    transform: translateX(100px) translateY(-40px) scale(1.25);
-  }
-}

@@ -19,10 +19,13 @@ interface CloudLayer {
 }
 
 const cloudLayers: CloudLayer[] = [
-  // Background clouds (behind text) - Reduced opacity for clearer sky
-  { src: "/clouds/low-clouds1.png", alt: "Low Clouds 1", opacity: 0.6, speed: 0.4, zIndex: -9 },
-  { src: "/clouds/low-clouds2.png", alt: "Low Clouds 2", opacity: 0.5, speed: 0.6, zIndex: -8 },
-  { src: "/clouds/high-clouds1.png", alt: "High Clouds 1", opacity: 0.4, speed: 1.0, zIndex: -6 },
+  // Low clouds (slower, bottom layer)
+  { src: "/clouds/low-clouds1.png", alt: "Low Clouds 1", opacity: 0.95, speed: 0.4, zIndex: -9 },
+  { src: "/clouds/low-clouds2.png", alt: "Low Clouds 2", opacity: 0.9, speed: 0.6, zIndex: -8 },
+  { src: "/clouds/low-clouds3.png", alt: "Low Clouds 3", opacity: 0.85, speed: 0.5, zIndex: -7 },
+  // High clouds (faster, top layer)
+  { src: "/clouds/high-clouds1.png", alt: "High Clouds 1", opacity: 0.8, speed: 1.0, zIndex: -6 },
+  { src: "/clouds/high-clouds2.png", alt: "High Clouds 2", opacity: 0.75, speed: 1.2, zIndex: -5 },
 ];
 
 export default function CloudsAnimation() {
@@ -84,7 +87,7 @@ export default function CloudsAnimation() {
         
         // Apply edge protection to movement intensity
         let xMovement, yMovement;
-        if (layer.alt.includes('high') || layer.alt.includes('High')) {
+        if (layer.alt.includes('high')) {
           // High clouds - with edge protection
           xMovement = xPercent * 25 * edgeProtection; // Increased from 20
           yMovement = yPercent * 15 * edgeProtection; // Increased from 12
@@ -129,7 +132,10 @@ export default function CloudsAnimation() {
         className="absolute inset-0 -z-10 h-full w-full object-cover"
       />
       
-      {/* Background Cloud Layers (behind text) */}
+      {/* Three.js Cloud Particles (Optional Enhancement) */}
+      {/* <ThreeCloudParticles enabled={true} /> */}
+      
+      {/* Animated Cloud Layers */}
       {cloudLayers.map((layer, index) => (
         <div
           key={layer.src}

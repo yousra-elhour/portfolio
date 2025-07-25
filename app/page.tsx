@@ -1,12 +1,11 @@
-import HeroSection from "./components/HeroSection";
-import { PageWrapper } from "./components/PageWrapper";
+import ScrollPortfolio from "./components/ScrollPortfolio";
+import ScrollNav from "./components/ScrollNav";
 
 export default function Home() {
   return (
     <>
-      <PageWrapper>
-        <HeroSection />
-      </PageWrapper>
+      <ScrollPortfolio />
+      <ScrollNav />
     </>
   );
 }

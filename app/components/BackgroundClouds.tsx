@@ -3,12 +3,6 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
-// import ThreeCloudParticles from "./ThreeCloudParticles";
-
-// Register GSAP plugin (removed ScrollTrigger since we're not using scroll effects)
-if (typeof window !== "undefined") {
-  // No plugins needed for basic animations
-}
 
 interface CloudLayer {
   src: string;
@@ -18,14 +12,14 @@ interface CloudLayer {
   zIndex: number;
 }
 
-const cloudLayers: CloudLayer[] = [
-  // Background clouds (behind text) - Reduced opacity for clearer sky
-  { src: "/clouds/low-clouds1.png", alt: "Low Clouds 1", opacity: 0.6, speed: 0.4, zIndex: -9 },
-  { src: "/clouds/low-clouds2.png", alt: "Low Clouds 2", opacity: 0.5, speed: 0.6, zIndex: -8 },
-  { src: "/clouds/high-clouds1.png", alt: "High Clouds 1", opacity: 0.4, speed: 1.0, zIndex: -6 },
+const backgroundCloudLayers: CloudLayer[] = [
+  // Background clouds (behind text)
+  { src: "/clouds/low-clouds1.png", alt: "Background Low Clouds 1", opacity: 0.8, speed: 0.4, zIndex: -15 },
+  { src: "/clouds/low-clouds2.png", alt: "Background Low Clouds 2", opacity: 0.7, speed: 0.6, zIndex: -12 },
+  { src: "/clouds/high-clouds1.png", alt: "Background High Clouds 1", opacity: 0.6, speed: 1.0, zIndex: -10 },
 ];
 
-export default function CloudsAnimation() {
+export default function BackgroundClouds() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cloudRefs = useRef<HTMLDivElement[]>([]);
 
@@ -40,7 +34,7 @@ export default function CloudsAnimation() {
     clouds.forEach((cloud, index) => {
       if (!cloud) return;
       
-      const layer = cloudLayers[index];
+      const layer = backgroundCloudLayers[index];
       const isReverse = index % 2 === 1; // Alternate direction for variety
       
       // Set initial scale to prevent edge visibility and opacity
@@ -80,11 +74,11 @@ export default function CloudsAnimation() {
       clouds.forEach((cloud, index) => {
         if (!cloud) return;
         
-        const layer = cloudLayers[index];
+        const layer = backgroundCloudLayers[index];
         
         // Apply edge protection to movement intensity
         let xMovement, yMovement;
-        if (layer.alt.includes('high') || layer.alt.includes('High')) {
+        if (layer.alt.includes('High')) {
           // High clouds - with edge protection
           xMovement = xPercent * 25 * edgeProtection; // Increased from 20
           yMovement = yPercent * 15 * edgeProtection; // Increased from 12
@@ -129,8 +123,8 @@ export default function CloudsAnimation() {
         className="absolute inset-0 -z-10 h-full w-full object-cover"
       />
       
-      {/* Background Cloud Layers (behind text) */}
-      {cloudLayers.map((layer, index) => (
+      {/* Background Cloud Layers */}
+      {backgroundCloudLayers.map((layer, index) => (
         <div
           key={layer.src}
           ref={(el) => {
@@ -148,12 +142,6 @@ export default function CloudsAnimation() {
           />
         </div>
       ))}
-      
-      {/* Gradient overlay for smooth transitions */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"
-        style={{ zIndex: -4 }}
-      />
     </div>
   );
 }
