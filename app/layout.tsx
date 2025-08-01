@@ -3,6 +3,7 @@ import { Montserrat, Marcellus_SC } from "next/font/google";
 import "./globals.css";
 import Client from "./components/Client";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import PageTransition from "./components/PageTransition";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: "300" });
 const marcellus = Marcellus_SC({
@@ -24,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${marcellus.className} ${montserrat.className}`}>
-        <Client>{children}</Client>
+        <Client>
+          <PageTransition>{children}</PageTransition>
+        </Client>
         <SpeedInsights />
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import cardiff from "../../public/images/cmu-blue-logo.gif";
-import Link from "next/link";
+import TransitionLink from "./TransitionLink"; // Replace Link import
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MoveUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -86,17 +86,17 @@ export default function Works() {
               className=" cursor-pointer"
             >
               <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20">
-                <Link
+                <TransitionLink
                   href={item.link}
                   className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em]  "
                 >
                   {item.title}
-                </Link>
+                </TransitionLink>
 
                 {item.live && (
-                  <Link target="_blank" href={item.live}>
+                  <TransitionLink target="_blank" href={item.live}>
                     <MoveUpRight className="lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50" />
-                  </Link>
+                  </TransitionLink>
                 )}
               </div>
 
