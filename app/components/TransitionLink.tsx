@@ -27,8 +27,15 @@ export default function TransitionLink({
 
     e.preventDefault();
     
-    // Simply navigate - PageTransition component handles the animation
-    router.push(href);
+    // Capture current page content BEFORE navigation
+    if (typeof window !== 'undefined' && window.captureCurrentPageForTransition) {
+      window.captureCurrentPageForTransition();
+    }
+    
+    // Small delay to ensure capture happens first
+    setTimeout(() => {
+      router.push(href);
+    }, 50);
   };
 
   return (

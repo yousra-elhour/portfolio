@@ -8,72 +8,106 @@ interface PageTransitionProps {
   children: React.ReactNode;
 }
 
+// Global state to capture DOM snapshot before navigation
+let globalPreviousHTML: string = '';
+let globalPreviousPath: string = '';
+
+// Global function type declaration
+declare global {
+  interface Window {
+    captureCurrentPageForTransition?: () => void;
+  }
+}
+
 export default function PageTransition({ children }: PageTransitionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previousPageRef = useRef<HTMLDivElement>(null);
   const newPageRef = useRef<HTMLDivElement>(null);
+  const contentWrapperRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [prevPathname, setPrevPathname] = useState<string>(pathname);
-  const [previousContent, setPreviousContent] = useState<React.ReactNode>(null);
+  const [previousHTML, setPreviousHTML] = useState<string>('');
   const [displayedContent, setDisplayedContent] = useState<React.ReactNode>(children);
 
   useEffect(() => {
-    console.log('Content useEffect:', { isTransitioning, hasChildren: !!children });
+    // If this is a navigation (not initial load)
+    if (globalPreviousPath && globalPreviousPath !== pathname) {
+      // Use the globally captured HTML
+      setPreviousHTML(globalPreviousHTML);
+      setIsTransitioning(true);
+    }
+    
+    // After handling transition, update global state for next navigation
+    setTimeout(() => {
+      if (contentWrapperRef.current) {
+        globalPreviousHTML = contentWrapperRef.current.innerHTML;
+        globalPreviousPath = pathname;
+      }
+    }, 100);
+    
+  }, [pathname]);
+
+  // Update displayed content when children change
+  useEffect(() => {
     if (!isTransitioning) {
       setDisplayedContent(children);
     }
   }, [children, isTransitioning]);
 
+  // Set up global capture function
   useEffect(() => {
-    console.log('Pathname changed:', { from: prevPathname, to: pathname, isTransitioning, hasPreviousContent: !!previousContent });
-    if (prevPathname === pathname) return;
-    if (prevPathname !== '') {
-      console.log('Starting transition');
-      setPreviousContent(displayedContent);
-      setIsTransitioning(true);
+    if (typeof window !== 'undefined') {
+      window.captureCurrentPageForTransition = () => {
+        if (contentWrapperRef.current) {
+          globalPreviousHTML = contentWrapperRef.current.innerHTML;
+          globalPreviousPath = pathname;
+        }
+      };
     }
-    setPrevPathname(pathname);
-  }, [pathname, prevPathname, isTransitioning, displayedContent]);
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.captureCurrentPageForTransition = undefined;
+      }
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const container = containerRef.current;
     const previousPage = previousPageRef.current;
     const newPage = newPageRef.current;
     if (!container || !newPage) return;
-    if (previousContent && previousPage && isTransitioning) {
+    
+    if (previousHTML && previousPage && isTransitioning) {
       gsap.set(newPage, { x: '100%', opacity: 1 });
       gsap.set(previousPage, { x: 0, opacity: 1 });
+      
       const tl = gsap.timeline({
         onComplete: () => {
-          setPreviousContent(null);
+          setPreviousHTML('');
           setIsTransitioning(false);
+          setDisplayedContent(children);
         }
       });
+      
       tl.to(previousPage, { x: '-100%', duration: 0.8, ease: 'power2.inOut' })
         .to(newPage, { x: 0, duration: 0.8, ease: 'power2.inOut' }, 0);
-    } else if (!previousContent && !isTransitioning) {
+    } else if (!previousHTML && !isTransitioning) {
       gsap.set(newPage, { x: 0, opacity: 1 });
     }
-  }, [previousContent, isTransitioning]);
+  }, [previousHTML, isTransitioning, children]);
 
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">
-      {previousContent && (
-        <div ref={previousPageRef} className="absolute inset-0 z-20 w-full h-full" 
-             style={{ backgroundColor: 'rgba(255, 0, 0, 0.1)', border: '3px solid red' }}>
-          <div style={{ position: 'absolute', top: '10px', left: '10px', color: 'red', fontWeight: 'bold', zIndex: 9999, backgroundColor: 'white', padding: '5px' }}>
-            PREVIOUS PAGE
-          </div>
-          {previousContent}
+      {previousHTML && (
+        <div ref={previousPageRef} className="absolute inset-0 z-20 w-full h-full">
+          <div dangerouslySetInnerHTML={{ __html: previousHTML }} />
         </div>
       )}
-      <div ref={newPageRef} className="relative z-10 w-full h-full"
-           style={{ backgroundColor: 'rgba(0, 255, 0, 0.1)', border: '3px solid green' }}>
-        <div style={{ position: 'absolute', top: '10px', right: '10px', color: 'green', fontWeight: 'bold', zIndex: 9999, backgroundColor: 'white', padding: '5px' }}>
-          NEW PAGE
+      <div ref={newPageRef} className="relative z-10 w-full h-full">
+        <div ref={contentWrapperRef}>
+          {displayedContent}
         </div>
-        {displayedContent}
       </div>
     </div>
   );
