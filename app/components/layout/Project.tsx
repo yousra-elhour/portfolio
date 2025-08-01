@@ -3,7 +3,7 @@
 import Image from "next/image";
 import image from "../../public/images/aaaaUntitled-1 1.jpg";
 
-import Nav from "./Nav";
+import Nav from "../Nav";
 import Link from "next/link";
 
 interface ProjectProps {

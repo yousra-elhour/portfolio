@@ -24,6 +24,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const previousPageRef = useRef<HTMLDivElement>(null);
   const newPageRef = useRef<HTMLDivElement>(null);
   const contentWrapperRef = useRef<HTMLDivElement>(null);
+  const isAnimatingRef = useRef(false);
   const pathname = usePathname();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [previousHTML, setPreviousHTML] = useState<string>('');
@@ -79,8 +80,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
     if (!container || !newPage) return;
     
     if (previousHTML && previousPage && isTransitioning) {
-      gsap.set(newPage, { x: '100%', opacity: 1 });
-      gsap.set(previousPage, { x: 0, opacity: 1 });
+      gsap.set(newPage, { y: '100%', opacity: 1 });
+      gsap.set(previousPage, { y: 0, opacity: 1 });
       
       const tl = gsap.timeline({
         onComplete: () => {
@@ -90,12 +91,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
         }
       });
       
-      tl.to(previousPage, { x: '-100%', duration: 0.8, ease: 'power2.inOut' })
-        .to(newPage, { x: 0, duration: 0.8, ease: 'power2.inOut' }, 0);
+      tl.to(previousPage, { y: '-100%', duration: 0.8, ease: 'power2.inOut' })
+        .to(newPage, { y: 0, duration: 0.8, ease: 'power2.inOut' }, 0);
     } else if (!previousHTML && !isTransitioning) {
-      gsap.set(newPage, { x: 0, opacity: 1 });
+      gsap.set(newPage, { y: 0, opacity: 1 });
     }
-  }, [previousHTML, isTransitioning, children]);
+  }, [previousHTML, isTransitioning]);
 
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">

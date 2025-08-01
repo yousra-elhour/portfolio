@@ -57,11 +57,11 @@ body::-webkit-scrollbar {
 
 .projects {
   scrollbar-width: 5px;
-  scrollbar-color: blueviolet transparent;
+  scrollbar-color: #ba989a transparent;
 }
 
 .projects::-webkit-scrollbar-thumb {
-  background-color: blueviolet;
+  background-color: #ba989a;
 }
 
 .projects::-webkit-scrollbar-track {
