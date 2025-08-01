@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "../../components/PageWrapper";
 import Project from "../../components/Project";
 import Previous from "@/app/components/Previous";
 
@@ -39,20 +38,18 @@ export default function WorksPage() {
   ];
   return (
     <>
-      <PageWrapper>
-        <Project
-          banner={"/images/cmu-blue-logo.gif"}
-          title={"University Projects"}
-          techStack={
-            "Web & App Development, Object Oriented Programming, Software Design"
-          }
-          description={`
-          Throughout my Bachelor of Software Engineering at Cardiff Metropolitan University, 
-          I worked on a variety of projects, Object Oriented programming, web development, database work, and software engineering principles. 
-          `}
-          imagesTitle={projects}
-        />
-      </PageWrapper>
+      <Project
+        banner={"/images/cmu-blue-logo.gif"}
+        title={"University Projects"}
+        techStack={
+          "Web & App Development, Object Oriented Programming, Software Design"
+        }
+        description={`
+        Throughout my Bachelor of Software Engineering at Cardiff Metropolitan University, 
+        I worked on a variety of projects, Object Oriented programming, web development, database work, and software engineering principles. 
+        `}
+        imagesTitle={projects}
+      />
 
       <Previous />
     </>

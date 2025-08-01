@@ -16,6 +16,10 @@
   }
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -26,6 +30,7 @@ body {
     rgb(var(--background-start-rgb));
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
+  overflow-x: hidden;
 }
 body::-webkit-scrollbar {
   width: 0.01px;
