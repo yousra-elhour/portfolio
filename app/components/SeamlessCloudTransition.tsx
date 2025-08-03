@@ -3,167 +3,109 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
+import { usePathname } from 'next/navigation';
 
-interface CloudTransitionProps {
+interface SeamlessCloudTransitionProps {
   onComplete?: () => void;
-  isVisible?: boolean;
-  trigger?: boolean;
+  fromHeroSection?: boolean;
 }
 
 interface CloudLayer {
   src: string;
   alt: string;
   opacity: number;
-  speed: number;
   zIndex: number;
-  delay: number;
-  duration: number;
-  yStart: number;
-  scale: number;
-  xStart: number;
+  heroPosition: { x: number; y: number; scale: number };
+  transitionPosition: { x: number; y: number; scale: number };
 }
 
-export default function CloudsPageTransition({ 
-  onComplete, 
-  isVisible = true,
-  trigger = true 
-}: CloudTransitionProps) {
+export default function SeamlessCloudTransition({ 
+  onComplete,
+  fromHeroSection = false
+}: SeamlessCloudTransitionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cloudRefs = useRef<HTMLDivElement[]>([]);
+  const pathname = usePathname();
+  const [isActive, setIsActive] = useState(false);
  
-  // Using same cloud layers as ForegroundClouds for consistency
-  const transitionClouds: CloudLayer[] = [
+  // Using exact same cloud layers as HeroSection ForegroundClouds for perfect continuity
+  const cloudLayers: CloudLayer[] = [
     { 
       src: "/clouds/lowCloud3.png", 
       alt: "Foreground Low Clouds", 
       opacity: 0.9, 
-      speed: 0.5, 
       zIndex: 10,
-      delay: 0,
-      duration: 1.2,
-      yStart: -200,
-      scale: 2,
-      xStart: 350
+      heroPosition: { x: 350, y: 200, scale: 2 },
+      transitionPosition: { x: 20, y: 180, scale: 2.5 }
     },
     { 
       src: "/clouds/lowCloud1.png", 
       alt: "Foreground Low Clouds", 
       opacity: 0.5, 
-      speed: 0.5, 
       zIndex: 10,
-      delay: 0.15,
-      duration: 1.4,
-      yStart: -180,
-      scale: 1.5,
-      xStart: 300
+      heroPosition: { x: 300, y: 200, scale: 1.5 },
+      transitionPosition: { x: 20, y: 180, scale: 1.2 }
     },
     { 
       src: "/clouds/highCloud2.png", 
       alt: "Foreground High Clouds", 
       opacity: 0.8, 
-      speed: 1.2, 
       zIndex: 15,
-      delay: 0.3,
-      duration: 1.6,
-      yStart: -160,
-      scale: 2,
-      xStart: 200
+      heroPosition: { x: 200, y: 100, scale: 2 },
+      transitionPosition: { x: -100, y: 100, scale: 2 }
     },
     { 
       src: "/clouds/highCloud1.png", 
       alt: "Top Layer High Clouds", 
       opacity: 1, 
-      speed: 1.5, 
       zIndex: 25,
-      delay: 0.45,
-      duration: 1.8,
-      yStart: -140,
-      scale: 2,
-      xStart: 100
+      heroPosition: { x: 100, y: -70, scale: 2 },
+      transitionPosition: { x: -200, y: -100, scale: 2 }
     },
   ];
 
+  // Trigger transition when navigating from home page
   useEffect(() => {
-    if (!trigger) return;
+    if (fromHeroSection && pathname !== '/') {
+      setIsActive(true);
+      performSeamlessTransition();
+    }
+  }, [pathname, fromHeroSection]);
+
+  const performSeamlessTransition = () => {
+    if (!containerRef.current) return;
 
     const clouds = cloudRefs.current.filter(Boolean);
-
-    // Create main timeline
     const tl = gsap.timeline();
 
-    // Set initial positions matching ForegroundClouds starting positions
+    // Set initial positions to match HeroSection ForegroundClouds exactly
     clouds.forEach((cloud, index) => {
-      const cloudData = transitionClouds[index];
+      const layer = cloudLayers[index];
       gsap.set(cloud, {
-        x: cloudData.xStart,
-        y: cloudData.yStart,
-        opacity: 0,
-        scale: cloudData.scale,
-        rotation: gsap.utils.random(-1, 1)
+        x: layer.heroPosition.x,
+        y: layer.heroPosition.y,
+        scale: layer.heroPosition.scale,
+        opacity: layer.opacity,
+        rotation: 0
       });
     });
 
-    // Phase 1: Clouds move into their final positions (similar to ForegroundClouds)
+    // Animate to transition positions smoothly
     clouds.forEach((cloud, index) => {
-      const cloudData = transitionClouds[index];
+      const layer = cloudLayers[index];
       
-      // Move clouds to their natural positions with similar animations as ForegroundClouds
-      if (index === 0) {
-        // First cloud layer (lowCloud3.png)
-        tl.to(cloud, {
-          x: 20,
-          y: 180,
-          opacity: cloudData.opacity,
-          scale: 2.5,
-          rotation: 0,
-          ease: "sine.inOut",
-          duration: cloudData.duration,
-        }, cloudData.delay);
-      }
-      else if (index === 1) {
-        // Second cloud layer (lowCloud1.png)
-        tl.to(cloud, {
-          x: 20,
-          y: 180,
-          opacity: cloudData.opacity,
-          scale: 1.2,
-          rotation: 0,
-          ease: "power2.inOut",
-          duration: cloudData.duration,
-        }, cloudData.delay);
-      }
-      else if (index === 2) {
-        // Third cloud layer (highCloud2.png)
-        tl.to(cloud, {
-          x: -100,
-          y: 100,
-          opacity: cloudData.opacity,
-          scale: cloudData.scale,
-          rotation: 0,
-          ease: "sine.inOut",
-          duration: cloudData.duration,
-        }, cloudData.delay);
-      }
-      else if (index === 3) {
-        // Fourth cloud layer (highCloud1.png)
-        tl.to(cloud, {
-          x: -200,
-          y: -100,
-          opacity: cloudData.opacity,
-          scale: cloudData.scale,
-          rotation: 0,
-          ease: "power1.inOut",
-          duration: cloudData.duration,
-        }, cloudData.delay);
-      }
+      tl.to(cloud, {
+        x: layer.transitionPosition.x,
+        y: layer.transitionPosition.y,
+        scale: layer.transitionPosition.scale,
+        duration: 1.5,
+        ease: "power2.inOut",
+      }, index * 0.1);
     });
 
-    // Phase 2: Keep clouds visible and start continuous floating animation (like ForegroundClouds)
+    // Start continuous floating animation after transition
     tl.call(() => {
-      // Start continuous floating animations similar to ForegroundClouds
       clouds.forEach((cloud, index) => {
-        const cloudData = transitionClouds[index];
-        
         if (index === 0) {
           gsap.to(cloud, {
             x: 20,
@@ -208,8 +150,8 @@ export default function CloudsPageTransition({
           });
         }
       });
-      
-      // Add mouse movement interaction (same as ForegroundClouds)
+
+      // Add mouse interaction
       const handleMouseMove = (e: MouseEvent) => {
         const { clientX, clientY } = e;
         const { innerWidth, innerHeight } = window;
@@ -220,10 +162,10 @@ export default function CloudsPageTransition({
         clouds.forEach((cloud, index) => {
           if (!cloud) return;
           
-          const cloudData = transitionClouds[index];
+          const layer = cloudLayers[index];
           let xMovement, yMovement;
           
-          if (cloudData.alt.includes('High')) {
+          if (layer.alt.includes('High')) {
             xMovement = xPercent * 20;
             yMovement = yPercent * 12;
           } else {
@@ -243,33 +185,18 @@ export default function CloudsPageTransition({
 
       if (typeof window !== "undefined") {
         window.addEventListener("mousemove", handleMouseMove);
-        
-        // Store the cleanup function
-        containerRef.current!.dataset.mouseCleanup = 'true';
       }
-    });
-
-    // Call onComplete when initial animation finishes
-    tl.call(() => {
+      
       if (onComplete) onComplete();
     });
-   
-    // Cleanup function
-    return () => {
-      if (typeof window !== "undefined" && containerRef.current?.dataset.mouseCleanup) {
-        // Remove event listener when component unmounts
-        window.removeEventListener("mousemove", () => {});
-      }
-    };
-  }, [trigger, onComplete]);
+  };
+
+  if (!isActive) return null;
 
   return (
     <div
       ref={containerRef}
       className="fixed inset-0 w-full h-full z-[9999] pointer-events-none overflow-hidden"
-      style={{ 
-        opacity: 1
-      }}
     >
       {/* Background Image - same as HeroSection */}
       <Image
@@ -280,7 +207,7 @@ export default function CloudsPageTransition({
         className="absolute inset-0 -z-30 h-full w-full object-cover"
       />
       
-      {transitionClouds.map((cloud, index) => (
+      {cloudLayers.map((cloud, index) => (
         <div
           key={`${cloud.src}-${index}`}
           ref={(el) => {
@@ -294,10 +221,6 @@ export default function CloudsPageTransition({
             alt={cloud.alt}
             fill
             className="object-cover"
-            style={{ 
-              filter: "brightness(1.05) contrast(1.02) saturate(0.9)",
-              mixBlendMode: "normal"
-            }}
             priority
           />
         </div>

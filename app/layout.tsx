@@ -28,11 +28,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${marcellus.className} ${montserrat.className}`}>
         <Client>
-          <CloudTransitionProvider>
-            <TestingCloudTransitionProvider>
+          
+            
               <PageTransition>{children}</PageTransition>
-            </TestingCloudTransitionProvider>
-          </CloudTransitionProvider>
+           
+          
         </Client>
         <SpeedInsights />
       </body>

@@ -5,8 +5,8 @@ import { Pixelify_Sans } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import CloudsAnimation from "./CloudsAnimation";
 import ForegroundClouds from "./ForegroundClouds";
+import TransitionLink from "./TransitionLink";
 
 const bhavuka = localFont({
   src: [
@@ -71,12 +71,7 @@ export default function HeroSection() {
       <div
         className={`relative isolate overflow-hidden ${bhavuka.variable} ${pixelifySans.variable} font-lead `}
       >
-        {/* Background with Clouds Animation */}
-        {/* <div className="absolute inset-0 -z-20">
-          <CloudsAnimation />
-        </div> */}
-
-        {/* Fallback background image */}
+       
         <Image
           src="/clouds/bg.png"
           alt="Background"
@@ -116,37 +111,30 @@ export default function HeroSection() {
               variants={containerVariants}
             >
               <motion.div variants={linkVariants} whileHover="hover">
-                <Link
+                <TransitionLink
                   href="/about"
                   className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
                 >
                   ABOUT ME
-                </Link>
+                </TransitionLink>
               </motion.div>
               <motion.div variants={linkVariants} whileHover="hover">
-                <Link
+                <TransitionLink
                   href="/works"
                   className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
                 >
                   WORKS
-                </Link>
+                </TransitionLink>
               </motion.div>
               <motion.div variants={linkVariants} whileHover="hover">
-                <Link
+                <TransitionLink
                   href="/contact"
                   className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
                 >
                   CONTACT
-                </Link>
+                </TransitionLink>
               </motion.div>
-              <motion.div variants={linkVariants} whileHover="hover">
-                <Link
-                  href="/testing"
-                  className="lg:text-lg md:text-md text-xs font-bold hover:text-blue-300 text-blue-200 transition-colors duration-200"
-                >
-                  TESTING
-                </Link>
-              </motion.div>
+              
             </motion.div>
           </div>
         </motion.div>

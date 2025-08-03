@@ -39,16 +39,16 @@ export default function ForegroundClouds() {
         gsap.set(cloud, { 
           scale: 2,
           opacity: layer.opacity,
-          x: 0,  // Custom X position
-          y: 180   // Custom Y position
+          x: 350,  // Custom X position
+          y: 200   // Custom Y position
         });
         
         gsap.to(cloud, {
-          x: 50,    // Where it moves to
-          y: 80,     // Where it moves to
+          x: 20,    // Where it moves to
+          y: 180,     // Where it moves to
           rotation: 0,
           scale: 2.5,
-          duration: 10,
+          duration: 20,
           ease: "sine.inOut",
           repeat: -1,
           yoyo: true
@@ -60,16 +60,16 @@ export default function ForegroundClouds() {
         gsap.set(cloud, { 
          scale: 1.5,
           opacity: layer.opacity,
-          x: 200,// Custom X position
+          x: 300,// Custom X position
           y: 200    // Custom Y position
         });
         
         gsap.to(cloud, {
           x: 20,     // Where it moves to
-          y: 100,      // Where it moves to
+          y: 180,      // Where it moves to
           rotation: 0,
           scale: 1.2,
-          duration: 25,
+          duration: 20,
           ease: "power2.inOut",
           repeat: -1,
           yoyo: true
@@ -82,12 +82,12 @@ export default function ForegroundClouds() {
           scale: 2,
           opacity: layer.opacity,
           x: 200,     // Custom X position
-          y: 150    // Custom Y position
+          y: 100    // Custom Y position
         });
         
         gsap.to(cloud, {
           x: -100,     // Where it moves to
-          duration: 12,
+          duration: 20,
           ease: "sine.inOut",
           repeat: -1,
           yoyo: true

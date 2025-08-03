@@ -5,8 +5,9 @@ import { Pixelify_Sans } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import CloudsAnimation from "./CloudsAnimation";
-import ForegroundClouds from "./ForegroundClouds";
+import CloudsAnimation from "../CloudsAnimation";
+import ForegroundClouds from "../ForegroundClouds";
+import TransitionLink from "../TransitionLink";
 
 const bhavuka = localFont({
   src: [
@@ -124,12 +125,12 @@ export default function HeroSection() {
                 </Link>
               </motion.div>
               <motion.div variants={linkVariants} whileHover="hover">
-                <Link
+                <TransitionLink
                   href="/works"
                   className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
                 >
                   WORKS
-                </Link>
+                </TransitionLink>
               </motion.div>
               <motion.div variants={linkVariants} whileHover="hover">
                 <Link

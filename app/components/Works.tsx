@@ -8,7 +8,7 @@ import { MoveUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import Email from "./Email";
 import Nav from "./Nav";
-import CloudsAnimation from "./CloudsAnimation";
+
 
 export default function Works() {
   const [parent] = useAutoAnimate();
@@ -46,19 +46,16 @@ export default function Works() {
   return (
     <>
       <div className="relative overflow-hidden " ref={parent}>
-        <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
+        {/* <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
           {""}
-        </div>
+        </div> */}
         <div className="bg-gray-900">
           <div className={`relative isolate overflow-hidden  font-lead `}>
-            {/* Background with Clouds Animation */}
-            <div className="absolute inset-0 -z-20">
-              <CloudsAnimation />
-            </div>
+           
 
             {/* Fallback background image */}
             <Image
-              src="/images/background-day.png"
+              src="/clouds/bg.png"
               alt="Background"
               fill
               priority
