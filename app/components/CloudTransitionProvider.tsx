@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import CloudsPageTransition from "./CloudsPageTransition";
 
 interface CloudTransitionContextType {
@@ -21,20 +21,20 @@ const CloudTransitionContext = createContext<
 export function CloudTransitionProvider({ children }: { children: ReactNode }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Check if we're on the testing/works page
+  const isTestingWorksPage = pathname?.includes('/testing/works');
 
   const navigateWithClouds = useCallback(
     (href: string) => {
       setIsTransitioning(true);
 
-      // Wait for clouds to cover screen, then navigate
       setTimeout(() => {
         router.push(href);
-      }, 1200); // Adjust based on your cloud animation timing
+      }, 2000); // Increased timeout to allow animation to complete
 
-      // Reset after transition
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 3000);
+    
     },
     [router]
   );
@@ -42,7 +42,19 @@ export function CloudTransitionProvider({ children }: { children: ReactNode }) {
   return (
     <CloudTransitionContext.Provider value={{ navigateWithClouds }}>
       {children}
-      {isTransitioning && (
+      {/* Only show clouds on testing/works page, not during transitions on other pages */}
+      {isTestingWorksPage && (
+        <CloudsPageTransition
+          onComplete={() => {
+            // Don't set isTransitioning to false on testing/works page
+            // This allows clouds to persist
+          }}
+          isVisible={isTestingWorksPage}
+          trigger={isTestingWorksPage}
+        />
+      )}
+      {/* Show transition clouds only during navigation and not on testing/works page */}
+      {isTransitioning && !isTestingWorksPage && (
         <CloudsPageTransition
           onComplete={() => setIsTransitioning(false)}
           isVisible={isTransitioning}

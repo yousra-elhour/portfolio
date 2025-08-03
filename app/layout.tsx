@@ -4,6 +4,8 @@ import "./globals.css";
 import Client from "./components/Client";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import PageTransition from "./components/PageTransition";
+import { CloudTransitionProvider } from "./components/CloudTransitionProvider";
+import { TestingCloudTransitionProvider } from "./components/TestingCloudTransitionProvider";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: "300" });
 const marcellus = Marcellus_SC({
@@ -26,7 +28,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${marcellus.className} ${montserrat.className}`}>
         <Client>
-          <PageTransition>{children}</PageTransition>
+          <CloudTransitionProvider>
+            <TestingCloudTransitionProvider>
+              <PageTransition>{children}</PageTransition>
+            </TestingCloudTransitionProvider>
+          </CloudTransitionProvider>
         </Client>
         <SpeedInsights />
       </body>

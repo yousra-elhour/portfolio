@@ -13,10 +13,10 @@ interface CloudLayer {
 }
 
 const foregroundCloudLayers: CloudLayer[] = [
-  { src: "/clouds/low-clouds3.png", alt: "Foreground Low Clouds", opacity: 0.9, speed: 0.5, zIndex: 10 },
-  { src: "/clouds/high-clouds2.png", alt: "Foreground High Clouds", opacity: 0.8, speed: 1.2, zIndex: 15 },
-  { src: "/clouds/low-clouds1.png", alt: "Top Layer Low Clouds", opacity: 1, speed: 0.8, zIndex: 20 },
-  { src: "/clouds/high-clouds1.png", alt: "Top Layer High Clouds", opacity: 1, speed: 1.5, zIndex: 25 },
+  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.9, speed: 0.5, zIndex: 10 },
+  { src: "/clouds/lowCloud1.png", alt: "Foreground Low Clouds", opacity: 0.5, speed: 0.5, zIndex: 10 },
+  { src: "/clouds/highCloud2.png", alt: "Foreground High Clouds", opacity: 0.8, speed: 1.2, zIndex: 15 },
+  { src: "/clouds/highCloud1.png", alt: "Top Layer High Clouds", opacity: 1, speed: 1.5, zIndex: 25 },
 ];
 
 export default function ForegroundClouds() {
@@ -37,17 +37,17 @@ export default function ForegroundClouds() {
       if (index === 0) {
         // First cloud layer (low-clouds3.png)
         gsap.set(cloud, { 
-          scale: 1.2,
+          scale: 2,
           opacity: layer.opacity,
           x: 0,  // Custom X position
-          y: 0   // Custom Y position
+          y: 180   // Custom Y position
         });
         
         gsap.to(cloud, {
-          x: 0,    // Where it moves to
-          y: 0,     // Where it moves to
+          x: 50,    // Where it moves to
+          y: 80,     // Where it moves to
           rotation: 0,
-          scale: 1.3,
+          scale: 2.5,
           duration: 10,
           ease: "sine.inOut",
           repeat: -1,
@@ -56,19 +56,19 @@ export default function ForegroundClouds() {
       }
       
       else if (index === 1) {
-        // Second cloud layer (high-clouds2.png)
+        // Second cloud layer (low-cloud1.png)
         gsap.set(cloud, { 
-        //   scale: 1.1,
+         scale: 1.5,
           opacity: layer.opacity,
-          x: 80,// Custom X position
-          y: 100    // Custom Y position
+          x: 200,// Custom X position
+          y: 200    // Custom Y position
         });
         
         gsap.to(cloud, {
-          x: 500,     // Where it moves to
+          x: 20,     // Where it moves to
           y: 100,      // Where it moves to
           rotation: 0,
-        //   scale: 1.2,
+          scale: 1.2,
           duration: 25,
           ease: "power2.inOut",
           repeat: -1,
@@ -77,19 +77,16 @@ export default function ForegroundClouds() {
       }
       
       else if (index === 2) {
-        // Third cloud layer (low-clouds1.png)
+        // Third cloud layer (high-cloud2.png)
         gsap.set(cloud, { 
-          scale: 1.3,
+          scale: 2,
           opacity: layer.opacity,
-          x: 0,     // Custom X position
-          y: 250    // Custom Y position
+          x: 200,     // Custom X position
+          y: 150    // Custom Y position
         });
         
         gsap.to(cloud, {
-          x: 150,     // Where it moves to
-          y: 180,     // Where it moves to
-          rotation: 2,
-          scale: 1.1,
+          x: -100,     // Where it moves to
           duration: 12,
           ease: "sine.inOut",
           repeat: -1,
@@ -100,18 +97,16 @@ export default function ForegroundClouds() {
       else if (index === 3) {
         // Fourth cloud layer (high-clouds1.png)
         gsap.set(cloud, { 
-          scale: 1.0,
+          scale: 2,
           opacity: layer.opacity,
-          x: -150,  // Custom X position
-          y: 80     // Custom Y position
+          x: 100,  // Custom X position
+          y: -70     // Custom Y position
         });
         
         gsap.to(cloud, {
-          x: 100,     // Where it moves to
-          y: 300,     // Where it moves to
-          rotation: -5,
-          scale: 1.4,
-          duration: 15,
+          x: -200,     // Where it moves to
+          y: -100,     // Where it moves to
+          duration: 20,
           ease: "power1.inOut",
           repeat: -1,
           yoyo: true

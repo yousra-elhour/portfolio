@@ -72,13 +72,13 @@ export default function HeroSection() {
         className={`relative isolate overflow-hidden ${bhavuka.variable} ${pixelifySans.variable} font-lead `}
       >
         {/* Background with Clouds Animation */}
-        <div className="absolute inset-0 -z-20">
+        {/* <div className="absolute inset-0 -z-20">
           <CloudsAnimation />
-        </div>
+        </div> */}
 
         {/* Fallback background image */}
         <Image
-          src="/images/background-day.png"
+          src="/clouds/bg.png"
           alt="Background"
           fill
           priority
@@ -137,6 +137,14 @@ export default function HeroSection() {
                   className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
                 >
                   CONTACT
+                </Link>
+              </motion.div>
+              <motion.div variants={linkVariants} whileHover="hover">
+                <Link
+                  href="/testing"
+                  className="lg:text-lg md:text-md text-xs font-bold hover:text-blue-300 text-blue-200 transition-colors duration-200"
+                >
+                  TESTING
                 </Link>
               </motion.div>
             </motion.div>

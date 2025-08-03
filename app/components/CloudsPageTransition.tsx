@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
 
@@ -17,8 +17,7 @@ export default function CloudsPageTransition({
 }: CloudTransitionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cloudRefs = useRef<HTMLDivElement[]>([]);
-
-  // Cloud layers for transition with more variety
+ 
   const transitionClouds = [
     { src: "/clouds/high-clouds1.png", delay: 0, duration: 0.8, yStart: -180, opacity: 0.95 },
     { src: "/clouds/low-clouds1.png", delay: 0.15, duration: 1.0, yStart: -220, opacity: 0.9 },
@@ -28,81 +27,53 @@ export default function CloudsPageTransition({
   ];
 
   useEffect(() => {
-    if (!containerRef.current || !trigger) return;
+    if (!trigger) return;
 
-    const container = containerRef.current;
     const clouds = cloudRefs.current.filter(Boolean);
 
     // Create main timeline
-    const tl = gsap.timeline({
-      onComplete: () => {
-        if (onComplete) onComplete();
-      }
-    });
+    const tl = gsap.timeline();
 
-    // Initial setup - clouds start above viewport
+    // Set initial positions (clouds start above the screen)
     clouds.forEach((cloud, index) => {
       const cloudData = transitionClouds[index];
-      if (!cloud || !cloudData) return;
-
       gsap.set(cloud, {
         y: cloudData.yStart,
-        opacity: cloudData.opacity,
-        scale: 1.3,
-        rotation: gsap.utils.random(-5, 5),
+        opacity: 0,
+        scale: 1.05,
+        rotation: gsap.utils.random(-1, 1)
       });
     });
 
-    // Set container to be visible from start
-    gsap.set(container, { opacity: 1 });
-
-    // Phase 1: Clouds cascade down to cover the screen
+    // Phase 1: Clouds cascade down to cover the screen with staggered animation
     clouds.forEach((cloud, index) => {
       const cloudData = transitionClouds[index];
-      if (!cloud || !cloudData) return;
-
+     
       tl.to(cloud, {
         y: 0, // Cover the screen completely
         opacity: cloudData.opacity,
         scale: 1.1,
         rotation: gsap.utils.random(-2, 2),
-        duration: cloudData.duration * 0.8,
         ease: "power2.out",
+        duration: cloudData.duration,
       }, cloudData.delay);
     });
 
-    // Phase 2: Hold clouds in position to fully cover screen
-    tl.to({}, { duration: 0.5 });
-
-    // Phase 3: Clouds continue down to reveal new content
-    clouds.forEach((cloud, index) => {
-      const cloudData = transitionClouds[index];
-      if (!cloud || !cloudData) return;
-
-      tl.to(cloud, {
-        y: window.innerHeight + 100,
-        opacity: 0,
-        scale: 1.4,
-        rotation: gsap.utils.random(-8, 8),
-        duration: cloudData.duration * 0.9,
-        ease: "power2.in",
-      }, `-=${cloudData.duration * 0.3}`);
+    // Phase 2: Keep clouds visible (for persistent clouds)
+    clouds.forEach((cloud) => {
+      tl.to(cloud, { 
+        duration: 9999 // Keep them visible indefinitely
+      }, "+=0.5"); 
     });
 
-    // Phase 4: Hide container after clouds are gone
-    tl.to(container, {
-      opacity: 0,
-      duration: 0.1,
-      ease: "power2.inOut",
-    }, "-=0.1");
-
-    return () => {
-      tl.kill();
-    };
+    // Call onComplete when animation finishes
+    tl.call(() => {
+      if (onComplete) onComplete();
+    });
+   
   }, [trigger, onComplete]);
 
-  if (!isVisible) return null;
-
+  
   return (
     <div
       ref={containerRef}
