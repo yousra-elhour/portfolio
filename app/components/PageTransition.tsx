@@ -189,14 +189,29 @@ export default function PageTransition({ children }: PageTransitionProps) {
     if (globalPreviousPath && globalPreviousPath !== pathname) {
       // Check if we should show clouds for this transition
       const shouldShow = shouldShowClouds(globalPreviousPath, pathname);
+      console.log('🔄 Navigation detected:', { 
+        from: globalPreviousPath, 
+        to: pathname, 
+        shouldShow,
+        timestamp: performance.now() 
+      });
       setShowClouds(shouldShow);
       
       if (shouldShow) {
+        console.log('✅ Setting isTransitioning to TRUE at:', performance.now());
+        // CRITICAL FIX: Update content IMMEDIATELY before transition
+        setDisplayedContent(children);
+        console.log('📄 Content updated IMMEDIATELY at:', performance.now());
         setIsTransitioning(true);
+      } else {
+        // For non-cloud transitions, just update content normally
+        setDisplayedContent(children);
       }
     } else {
       // For initial load, don't show clouds
+      console.log('🏠 Initial load, no clouds shown:', pathname);
       setShowClouds(false);
+      setDisplayedContent(children);
     }
     
     // After handling transition, update global state for next navigation
@@ -207,14 +222,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       }
     }, 100);
     
-  }, [pathname]);
-
-  // Update displayed content when children change
-  useEffect(() => {
-    if (!isTransitioning) {
-      setDisplayedContent(children);
-    }
-  }, [children, isTransitioning]);
+  }, [pathname, children]);
 
   // Set up global capture function
   useEffect(() => {
@@ -235,11 +243,9 @@ export default function PageTransition({ children }: PageTransitionProps) {
   }, [pathname]);
 
   useEffect(() => {
-    // Simply update the displayed content and handle cloud transition
+    // Handle cloud transition animation
     if (isTransitioning) {
-      // Update content immediately, keep clouds visible
-      setIsTransitioning(false);
-      setDisplayedContent(children);
+      console.log('🎬 TRANSITION ANIMATION STARTED at:', performance.now());
       
       // Animate clouds and content entrance
       if (showClouds && containerRef.current) {
@@ -344,11 +350,15 @@ export default function PageTransition({ children }: PageTransitionProps) {
           opacity: 1,
           y: 0,
           duration: 1.2,
-          ease: "power2.out"
+          ease: "power2.out",
+          onComplete: () => {
+            console.log('🎉 TRANSITION COMPLETE at:', performance.now());
+            setIsTransitioning(false);
+          }
         }, "-=1.0"); // Start content fade-in earlier for better diving effect
       }
     }
-  }, [isTransitioning, children, showClouds]);
+  }, [isTransitioning, showClouds]);
 
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">
@@ -368,7 +378,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
           {/* Background Cloud Layers */}
           {cloudLayers.map((layer, index) => (
             <div
-              key={layer.src}
+              key={`${layer.src}-${index}`}
               ref={(el) => {
                 if (el) cloudRefs.current[index] = el;
               }}

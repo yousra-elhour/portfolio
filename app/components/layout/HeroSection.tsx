@@ -1,6 +1,6 @@
 "use client";
 
-import localFont from "@next/font/local";
+import localFont from "next/font/local";
 import { Pixelify_Sans } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
