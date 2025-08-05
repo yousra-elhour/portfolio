@@ -41,6 +41,16 @@ const shouldShowClouds = (fromPath: string, toPath: string): boolean => {
   return fromPath === '/' && (toPath === '/works' || toPath === '/about' || toPath === '/contact');
 };
 
+// Helper function to determine if we should show project transition
+const shouldShowProjectTransition = (fromPath: string, toPath: string): boolean => {
+  return fromPath === '/works' && toPath.startsWith('/works/');
+};
+
+// Helper function to determine if we should show home transition (simple transition, no clouds)
+const shouldShowHomeTransition = (fromPath: string, toPath: string): boolean => {
+  return toPath === '/' && (fromPath === '/works' || fromPath === '/about' || fromPath === '/contact' || fromPath.startsWith('/works/'));
+};
+
 // Global function type declaration
 declare global {
   interface Window {
@@ -53,10 +63,13 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const newPageRef = useRef<HTMLDivElement>(null);
   const contentWrapperRef = useRef<HTMLDivElement>(null);
   const cloudRefs = useRef<HTMLDivElement[]>([]);
+  const projectOverlayRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayedContent, setDisplayedContent] = useState<React.ReactNode>(children);
   const [showClouds, setShowClouds] = useState(false);
+  const [showProjectTransition, setShowProjectTransition] = useState(false);
+  const [showHomeTransition, setShowHomeTransition] = useState(false);
 
   // Clouds animation setup
   useEffect(() => {
@@ -189,28 +202,26 @@ export default function PageTransition({ children }: PageTransitionProps) {
     if (globalPreviousPath && globalPreviousPath !== pathname) {
       // Check if we should show clouds for this transition
       const shouldShow = shouldShowClouds(globalPreviousPath, pathname);
-      console.log('🔄 Navigation detected:', { 
-        from: globalPreviousPath, 
-        to: pathname, 
-        shouldShow,
-        timestamp: performance.now() 
-      });
-      setShowClouds(shouldShow);
+      const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
+      const shouldShowHome = shouldShowHomeTransition(globalPreviousPath, pathname);
       
-      if (shouldShow) {
-        console.log('✅ Setting isTransitioning to TRUE at:', performance.now());
+      setShowClouds(shouldShow);
+      setShowProjectTransition(shouldShowProject);
+      setShowHomeTransition(shouldShowHome);
+      
+      if (shouldShow || shouldShowProject || shouldShowHome) {
         // CRITICAL FIX: Update content IMMEDIATELY before transition
         setDisplayedContent(children);
-        console.log('📄 Content updated IMMEDIATELY at:', performance.now());
         setIsTransitioning(true);
       } else {
-        // For non-cloud transitions, just update content normally
+        // For non-transition navigations, just update content normally
         setDisplayedContent(children);
       }
     } else {
-      // For initial load, don't show clouds
-      console.log('🏠 Initial load, no clouds shown:', pathname);
+      // For initial load, don't show transitions
       setShowClouds(false);
+      setShowProjectTransition(false);
+      setShowHomeTransition(false);
       setDisplayedContent(children);
     }
     
@@ -243,12 +254,10 @@ export default function PageTransition({ children }: PageTransitionProps) {
   }, [pathname]);
 
   useEffect(() => {
-    // Handle cloud transition animation
+    // Handle transition animations
     if (isTransitioning) {
-      console.log('🎬 TRANSITION ANIMATION STARTED at:', performance.now());
-      
-      // Animate clouds and content entrance
       if (showClouds && containerRef.current) {
+        // Animate clouds and content entrance
         const clouds = cloudRefs.current;
         const contentWrapper = contentWrapperRef.current;
         
@@ -313,7 +322,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
           if (baseIndex === 0) {
             // Lower cloud flows down to cover screen
             entranceTl.to(cloud, {    
-              y: 100 + (offsetMultiplier * 50),
+              y: 350 + (offsetMultiplier * 50),
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
@@ -329,7 +338,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
           } else if (baseIndex === 2) {
             // High cloud flows down
             entranceTl.to(cloud, { 
-              y: 300 + (offsetMultiplier * 40),          
+              y: -10 + (offsetMultiplier * 40),    
+              x: -50 + (offsetMultiplier * 20),      
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
@@ -352,17 +362,75 @@ export default function PageTransition({ children }: PageTransitionProps) {
           duration: 1.2,
           ease: "power2.out",
           onComplete: () => {
-            console.log('🎉 TRANSITION COMPLETE at:', performance.now());
             setIsTransitioning(false);
           }
         }, "-=1.0"); // Start content fade-in earlier for better diving effect
+        
+      } else if (showProjectTransition && containerRef.current) {
+        // Project transition: Cloud parting effect
+        const contentWrapper = contentWrapperRef.current;
+        const overlay = projectOverlayRef.current;
+        
+        if (contentWrapper && overlay) {
+          // Set initial states
+          gsap.set(contentWrapper, { opacity: 0, scale: 0.9, y: 30 });
+          gsap.set(overlay, { 
+            opacity: 1,
+            background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.8) 0%, rgba(255, 255, 255, 0.9) 40%, rgba(240, 248, 255, 1) 100%)"
+          });
+          
+          // Create project entrance timeline
+          const projectTl = gsap.timeline();
+          
+          // Cloud parting effect - overlay fades and "parts" outward
+          projectTl.to(overlay, {
+            opacity: 0,
+            scale: 1.2,
+            duration: 1.0,
+            ease: "power2.out"
+          }, 0);
+          
+          // Content emerges from behind the "parting clouds"
+          projectTl.to(contentWrapper, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 1.2,
+            ease: "back.out(1.2)",
+            onComplete: () => {
+              setIsTransitioning(false);
+            }
+          }, 0.3);
+        }
+      } else if (showHomeTransition && containerRef.current) {
+        // Simple home transition: Clean fade effect without clouds
+        const contentWrapper = contentWrapperRef.current;
+        
+        if (contentWrapper) {
+          // Set initial state
+          gsap.set(contentWrapper, { opacity: 0, y: 20 });
+          
+          // Create simple fade-in timeline
+          const homeTl = gsap.timeline();
+          
+          // Simple fade in with slight upward movement
+          homeTl.to(contentWrapper, {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            onComplete: () => {
+              setIsTransitioning(false);
+            }
+          });
+        }
       }
     }
-  }, [isTransitioning, showClouds]);
+  }, [isTransitioning, showClouds, showProjectTransition, showHomeTransition]);
 
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">
-      {/* Background Cloud Animation Layer - Only show when transitioning from / to /works */}
+      {/* Background Cloud Animation Layer - Only show for non-home transitions */}
       {showClouds && (
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           {/* Main Background - same as HeroSection */}
@@ -402,6 +470,15 @@ export default function PageTransition({ children }: PageTransitionProps) {
             style={{ zIndex: 6 }}
           />
         </div>
+      )}
+
+      {/* Project Transition Overlay - Cloud parting effect */}
+      {showProjectTransition && (
+        <div 
+          ref={projectOverlayRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 15 }}
+        />
       )}
 
       {/* Page Content */}

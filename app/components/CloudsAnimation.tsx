@@ -20,9 +20,9 @@ interface CloudLayer {
 
 const cloudLayers: CloudLayer[] = [
   // Background clouds (behind text) - Reduced opacity for clearer sky
-  { src: "/clouds/low-clouds1.png", alt: "Low Clouds 1", opacity: 0.6, speed: 0.4, zIndex: -9 },
-  { src: "/clouds/low-clouds2.png", alt: "Low Clouds 2", opacity: 0.5, speed: 0.6, zIndex: -8 },
-  { src: "/clouds/high-clouds1.png", alt: "High Clouds 1", opacity: 0.4, speed: 1.0, zIndex: -6 },
+  { src: "/clouds/lowCloud1.png", alt: "Low Clouds 1", opacity: 0.6, speed: 0.4, zIndex: -9 },
+  { src: "/clouds/lowCloud2.png", alt: "Low Clouds 2", opacity: 0.5, speed: 0.6, zIndex: -8 },
+  { src: "/clouds/highCloud1.png", alt: "High Clouds 1", opacity: 0.4, speed: 1.0, zIndex: -6 },
 ];
 
 export default function CloudsAnimation() {

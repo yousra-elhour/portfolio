@@ -4,7 +4,6 @@ import Link from "next/link";
 import Email from "./Email";
 import Nav from "./Nav";
 import { MoveUpRight } from "lucide-react";
-import CloudsAnimation from "./CloudsAnimation";
 
 export default function Works() {
   return (
@@ -14,14 +13,9 @@ export default function Works() {
       </div>
       <div className="bg-gray-900">
         <div className={`relative isolate overflow-hidden  font-lead `}>
-          {/* Background with Clouds Animation */}
-          <div className="absolute inset-0 -z-20">
-            <CloudsAnimation />
-          </div>
-
           {/* Fallback background image */}
           <Image
-            src="/images/background-day.png"
+            src="/clouds/bg.png"
             alt="Background"
             fill
             priority

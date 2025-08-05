@@ -7,6 +7,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import ForegroundClouds from "./ForegroundClouds";
 import TransitionLink from "./TransitionLink";
+import FloatingStars from "./FloatingStars";
 
 const bhavuka = localFont({
   src: [
@@ -71,7 +72,9 @@ export default function HeroSection() {
       <div
         className={`relative isolate overflow-hidden ${bhavuka.variable} ${pixelifySans.variable} font-lead `}
       >
-       
+          <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
+        {""}
+      </div>
         <Image
           src="/clouds/bg.png"
           alt="Background"
@@ -79,6 +82,9 @@ export default function HeroSection() {
           priority
           className="absolute inset-0 -z-30 h-full w-full object-cover"
         />
+
+        {/* Floating Interactive Stars */}
+        <FloatingStars />
 
         <div
           className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-2xl sm:-top-80"
