@@ -31,6 +31,10 @@ body {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   overflow-x: hidden;
+  /* Anti-flickering optimizations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 body::-webkit-scrollbar {
   width: 0.01px;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import ForegroundClouds from "./ForegroundClouds";
+import CloudsAnimation from "./CloudsAnimation";
 import TransitionLink from "./TransitionLink";
 import FloatingStars from "./FloatingStars";
 
@@ -82,6 +83,9 @@ export default function HeroSection() {
           priority
           className="absolute inset-0 -z-30 h-full w-full object-cover"
         />
+
+        {/* Background Clouds Animation */}
+        <CloudsAnimation />
 
         {/* Floating Interactive Stars */}
         <FloatingStars />

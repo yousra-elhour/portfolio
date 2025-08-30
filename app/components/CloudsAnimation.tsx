@@ -19,10 +19,10 @@ interface CloudLayer {
 }
 
 const cloudLayers: CloudLayer[] = [
-  // Background clouds (behind text) - Reduced opacity for clearer sky
-  { src: "/clouds/lowCloud1.png", alt: "Low Clouds 1", opacity: 0.6, speed: 0.4, zIndex: -9 },
-  { src: "/clouds/lowCloud2.png", alt: "Low Clouds 2", opacity: 0.5, speed: 0.6, zIndex: -8 },
-  { src: "/clouds/highCloud1.png", alt: "High Clouds 1", opacity: 0.4, speed: 1.0, zIndex: -6 },
+  // Background clouds (behind text) - Further reduced opacity to minimize conflicts
+  { src: "/clouds/lowCloud1.png", alt: "Low Clouds 1", opacity: 0.3, speed: 0.4, zIndex: -15 },
+  { src: "/clouds/lowCloud2.png", alt: "Low Clouds 2", opacity: 0.25, speed: 0.6, zIndex: -12 },
+  { src: "/clouds/highCloud1.png", alt: "High Clouds 1", opacity: 0.2, speed: 1.0, zIndex: -10 },
 ];
 
 export default function CloudsAnimation() {
@@ -34,8 +34,10 @@ export default function CloudsAnimation() {
 
     const clouds = cloudRefs.current;
     
-    // Create main timeline for continuous floating animation
-    const tl = gsap.timeline({ repeat: -1 });
+    // Kill any existing animations to prevent conflicts
+    clouds.forEach(cloud => {
+      if (cloud) gsap.killTweensOf(cloud);
+    });
 
     clouds.forEach((cloud, index) => {
       if (!cloud) return;
@@ -43,75 +45,76 @@ export default function CloudsAnimation() {
       const layer = cloudLayers[index];
       const isReverse = index % 2 === 1; // Alternate direction for variety
       
-      // Set initial scale to prevent edge visibility and opacity
+      // Set initial scale and opacity with hardware acceleration
       gsap.set(cloud, { 
-        scale: 1.2, // Scale up to prevent edges showing
-        opacity: layer.opacity 
+        scale: 1.1, // Reduced scale to prevent edge visibility
+        opacity: layer.opacity,
+        force3D: true // Enable hardware acceleration
       });
 
-      // Create floating animation for each cloud layer
-      const cloudTl = gsap.timeline({ repeat: -1, yoyo: true });
-      
-      cloudTl.to(cloud, {
-        x: isReverse ? -150 : 150,
-        y: gsap.utils.random(-60, 60),
-        rotation: gsap.utils.random(-3, 3),
-        scale: gsap.utils.random(1.15, 1.25), // More dynamic scaling
-        duration: 8 + (index * 1.5), // Faster: reduced from 12 + (index * 2)
-        ease: "sine.inOut",
+      // Create slower, more stable floating animation
+      gsap.to(cloud, {
+        x: isReverse ? -80 : 80, // Reduced movement
+        y: gsap.utils.random(-30, 30), // Reduced vertical movement
+        rotation: gsap.utils.random(-1, 1), // Minimal rotation
+        scale: gsap.utils.random(1.05, 1.15), // Minimal scaling
+        duration: 25 + (index * 3), // Much slower: increased from 8 + (index * 1.5)
+        ease: "none", // Linear ease to prevent stuttering
+        repeat: -1,
+        yoyo: true,
+        force3D: true
       });
     });
 
-    // Smart mouse parallax effect with edge protection
+    // Simplified mouse parallax effect with throttling
+    let mouseTimeout: NodeJS.Timeout;
     const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      
-      // Calculate mouse position as percentage from center (-1 to 1)
-      const xPercent = (clientX / innerWidth - 0.5) * 2;
-      const yPercent = (clientY / innerHeight - 0.5) * 2;
-      
-      // Calculate distance from center (0 to 1)
-      const distanceFromCenter = Math.sqrt(xPercent * xPercent + yPercent * yPercent);
-      
-      // Reduce movement intensity when mouse is near edges
-      const edgeProtection = Math.max(0.3, 1 - (distanceFromCenter * 0.5));
-      
-      clouds.forEach((cloud, index) => {
-        if (!cloud) return;
+      clearTimeout(mouseTimeout);
+      mouseTimeout = setTimeout(() => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
         
-        const layer = cloudLayers[index];
+        const xPercent = (clientX / innerWidth - 0.5) * 2;
+        const yPercent = (clientY / innerHeight - 0.5) * 2;
         
-        // Apply edge protection to movement intensity
-        let xMovement, yMovement;
-        if (layer.alt.includes('high') || layer.alt.includes('High')) {
-          // High clouds - with edge protection
-          xMovement = xPercent * 25 * edgeProtection; // Increased from 20
-          yMovement = yPercent * 15 * edgeProtection; // Increased from 12
-        } else {
-          // Low clouds - with stronger edge protection
-          xMovement = xPercent * 12 * edgeProtection; // Increased from 8
-          yMovement = yPercent * 8 * edgeProtection; // Increased from 5
-        }
-        
-        gsap.to(cloud, {
-          x: `+=${xMovement}`,
-          y: `+=${yMovement}`,
-          duration: 1.2, // Faster response from 1.5
-          ease: "power2.out",
-          overwrite: false,
+        clouds.forEach((cloud, index) => {
+          if (!cloud) return;
+          
+          const layer = cloudLayers[index];
+          
+          // Reduced movement intensity for background clouds
+          let xMovement, yMovement;
+          if (layer.alt.includes('high') || layer.alt.includes('High')) {
+            xMovement = xPercent * 8; // Greatly reduced from 25
+            yMovement = yPercent * 5; // Greatly reduced from 15
+          } else {
+            xMovement = xPercent * 5; // Greatly reduced from 12
+            yMovement = yPercent * 3; // Greatly reduced from 8
+          }
+          
+          gsap.to(cloud, {
+            x: `+=${xMovement}`,
+            y: `+=${yMovement}`,
+            duration: 2, // Slower response
+            ease: "power1.out",
+            overwrite: "auto",
+            force3D: true
+          });
         });
-      });
+      }, 16); // Throttle to ~60fps
     };
 
-    // Add subtle mouse interactions
+    // Add mouse interactions
     if (typeof window !== "undefined") {
-      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove, { passive: true });
     }
 
     // Cleanup function
     return () => {
-      tl.kill();
+      clearTimeout(mouseTimeout);
+      clouds.forEach(cloud => {
+        if (cloud) gsap.killTweensOf(cloud);
+      });
       if (typeof window !== "undefined") {
         window.removeEventListener("mousemove", handleMouseMove);
       }
@@ -126,33 +129,48 @@ export default function CloudsAnimation() {
         alt="Sky Background"
         fill
         priority
-        className="absolute inset-0 -z-10 h-full w-full object-cover"
+        className="absolute inset-0 -z-20 h-full w-full object-cover"
+        style={{ 
+          transform: 'translateZ(0)', // Force hardware acceleration
+          backfaceVisibility: 'hidden' // Prevent flickering
+        }}
       />
       
       {/* Background Cloud Layers (behind text) */}
       {cloudLayers.map((layer, index) => (
         <div
-          key={layer.src}
+          key={`${layer.src}-bg-${index}`} // More stable key
           ref={(el) => {
             if (el) cloudRefs.current[index] = el;
           }}
           className="absolute inset-0 h-full w-full overflow-hidden"
-          style={{ zIndex: layer.zIndex }}
+          style={{ 
+            zIndex: layer.zIndex,
+            willChange: 'transform', // Optimize for animations
+            backfaceVisibility: 'hidden' // Prevent flickering
+          }}
         >
           <Image
             src={layer.src}
             alt={layer.alt}
             fill
             className="h-full w-full object-cover"
-            style={{ opacity: layer.opacity }}
+            style={{ 
+              opacity: layer.opacity,
+              transform: 'translateZ(0)', // Force hardware acceleration
+              backfaceVisibility: 'hidden' // Prevent flickering
+            }}
           />
         </div>
       ))}
       
-      {/* Gradient overlay for smooth transitions */}
+      {/* Simplified gradient overlay */}
       <div 
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"
-        style={{ zIndex: -4 }}
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5 pointer-events-none"
+        style={{ 
+          zIndex: -5,
+          backfaceVisibility: 'hidden' // Prevent flickering
+        }}
       />
     </div>
   );

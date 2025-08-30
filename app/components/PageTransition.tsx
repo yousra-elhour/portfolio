@@ -17,19 +17,19 @@ interface CloudLayer {
   zIndex: number;
 }
 
-// Using the same clouds as HeroSection ForegroundClouds, with duplicates for better coverage
+// Restored all cloud layers for transitions with anti-flickering optimizations
 const cloudLayers: CloudLayer[] = [
-  // Original clouds
-  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.9, speed: 0.5, zIndex: 9999 },
+  // Original clouds with optimized opacity values
+  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.8, speed: 0.5, zIndex: 9999 },
   { src: "/clouds/lowCloud1.png", alt: "Foreground Low Clouds", opacity: 0.5, speed: 0.5, zIndex: 9998 },
-  { src: "/clouds/highCloud2.png", alt: "Foreground High Clouds", opacity: 0.8, speed: 1.2, zIndex: 9997 },
-  { src: "/clouds/highCloud1.png", alt: "Top Layer High Clouds", opacity: 1, speed: 1.5, zIndex: 9996 },
+  { src: "/clouds/highCloud2.png", alt: "Foreground High Clouds", opacity: 0.7, speed: 1.2, zIndex: 9997 },
+  { src: "/clouds/highCloud1.png", alt: "Top Layer High Clouds", opacity: 0.9, speed: 1.5, zIndex: 9996 },
   
-  // Duplicate clouds for better coverage
-  { src: "/clouds/lowCloud3.png", alt: "Duplicate Foreground Low Clouds", opacity: 0.7, speed: 0.5, zIndex: 9995 },
+  // Duplicate clouds for better coverage with reduced opacity
+  { src: "/clouds/lowCloud3.png", alt: "Duplicate Foreground Low Clouds", opacity: 0.6, speed: 0.5, zIndex: 9995 },
   { src: "/clouds/lowCloud1.png", alt: "Duplicate Foreground Low Clouds", opacity: 0.4, speed: 0.5, zIndex: 9994 },
-  { src: "/clouds/highCloud2.png", alt: "Duplicate Foreground High Clouds", opacity: 0.6, speed: 1.2, zIndex: 9993 },
-  { src: "/clouds/highCloud1.png", alt: "Duplicate Top Layer High Clouds", opacity: 0.8, speed: 1.5, zIndex: 9992 },
+  { src: "/clouds/highCloud2.png", alt: "Duplicate Foreground High Clouds", opacity: 0.5, speed: 1.2, zIndex: 9993 },
+  { src: "/clouds/highCloud1.png", alt: "Duplicate Top Layer High Clouds", opacity: 0.7, speed: 1.5, zIndex: 9992 },
 ];
 
 // Global state to capture DOM snapshot before navigation
@@ -71,13 +71,18 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [showProjectTransition, setShowProjectTransition] = useState(false);
   const [showHomeTransition, setShowHomeTransition] = useState(false);
 
-  // Clouds animation setup
+  // Clouds animation setup - restored full functionality with anti-flickering
   useEffect(() => {
     if (!containerRef.current || !showClouds) return;
 
     const clouds = cloudRefs.current;
     
-    // Delay the continuous animation to allow entrance animation to complete
+    // Kill any existing animations to prevent conflicts
+    clouds.forEach(cloud => {
+      if (cloud) gsap.killTweensOf(cloud);
+    });
+    
+    // Restored full continuous animation with optimizations
     const setupContinuousAnimation = () => {
       clouds.forEach((cloud, index) => {
         if (!cloud) return;
@@ -90,7 +95,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         const offsetMultiplier = isOriginal ? 1 : -1;
         const scaleMultiplier = isOriginal ? 1 : 0.8;
         
-        // Individual control for each cloud layer - START FROM CURRENT POSITION (no gsap.set)
+        // Individual control for each cloud layer with hardware acceleration
         if (baseIndex === 0) {
           // First cloud layer (lowCloud3.png) - animate from where entrance left off
           gsap.to(cloud, {
@@ -98,10 +103,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
             y: 180 + (offsetMultiplier * 40),
             rotation: 0,
             scale: 2.5 * scaleMultiplier,
-            duration: 20,
-            ease: "sine.inOut",
+            duration: 25, // Slower for stability
+            ease: "none", // Linear ease to prevent stuttering
             repeat: -1,
-            yoyo: true
+            yoyo: true,
+            force3D: true // Hardware acceleration
           });
         }
         else if (baseIndex === 1) {
@@ -111,20 +117,22 @@ export default function PageTransition({ children }: PageTransitionProps) {
             y: 180 + (offsetMultiplier * 50),
             rotation: 0,
             scale: 1.2 * scaleMultiplier,
-            duration: 20,
-            ease: "power2.inOut",
+            duration: 25,
+            ease: "none",
             repeat: -1,
-            yoyo: true
+            yoyo: true,
+            force3D: true
           });
         }
         else if (baseIndex === 2) {
           // Third cloud layer (highCloud2.png) - animate from where entrance left off
           gsap.to(cloud, {
             x: -100 + (offsetMultiplier * 100),
-            duration: 20,
-            ease: "sine.inOut",
+            duration: 25,
+            ease: "none",
             repeat: -1,
-            yoyo: true
+            yoyo: true,
+            force3D: true
           });
         }
         else if (baseIndex === 3) {
@@ -132,10 +140,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
           gsap.to(cloud, {
             x: -200 + (offsetMultiplier * 80),
             y: -100 + (offsetMultiplier * 40),
-            duration: 20,
-            ease: "power1.inOut",
+            duration: 25,
+            ease: "none",
             repeat: -1,
-            yoyo: true
+            yoyo: true,
+            force3D: true
           });
         }
       });
@@ -144,53 +153,61 @@ export default function PageTransition({ children }: PageTransitionProps) {
     // Start continuous animation after entrance animation
     const timeoutId = setTimeout(() => {
       setupContinuousAnimation();
-    }, 1500);
+    }, 1800);
 
-    // Smart mouse parallax effect (matching ForegroundClouds exactly)
+    // Optimized mouse parallax effect with throttling
+    let mouseTimeout: NodeJS.Timeout;
     const handleMouseMove = (e: MouseEvent) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      
-      const xPercent = (clientX / innerWidth - 0.5) * 2;
-      const yPercent = (clientY / innerHeight - 0.5) * 2;
-      
-      clouds.forEach((cloud, index) => {
-        if (!cloud) return;
+      clearTimeout(mouseTimeout);
+      mouseTimeout = setTimeout(() => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
         
-        const layer = cloudLayers[index];
-        const isOriginal = index < 4;
-        const baseIndex = index % 4;
+        const xPercent = (clientX / innerWidth - 0.5) * 2;
+        const yPercent = (clientY / innerHeight - 0.5) * 2;
         
-        // Get the original cloud type for movement calculation
-        const originalLayer = cloudLayers[baseIndex];
-        let xMovement, yMovement;
-        
-        if (originalLayer.alt.includes('High')) {
-          xMovement = xPercent * (isOriginal ? 20 : 15); // Slightly different movement for duplicates
-          yMovement = yPercent * (isOriginal ? 12 : 9);
-        } else {
-          xMovement = xPercent * (isOriginal ? 15 : 12);
-          yMovement = yPercent * (isOriginal ? 8 : 6);
-        }
-        
-        gsap.to(cloud, {
-          x: `+=${xMovement}`,
-          y: `+=${yMovement}`,
-          duration: 1.2,
-          ease: "power2.out",
-          overwrite: false,
+        clouds.forEach((cloud, index) => {
+          if (!cloud) return;
+          
+          const layer = cloudLayers[index];
+          const isOriginal = index < 4;
+          const baseIndex = index % 4;
+          
+          // Get the original cloud type for movement calculation
+          const originalLayer = cloudLayers[baseIndex];
+          let xMovement, yMovement;
+          
+          if (originalLayer.alt.includes('High')) {
+            xMovement = xPercent * (isOriginal ? 15 : 12); // Reduced movement for stability
+            yMovement = yPercent * (isOriginal ? 8 : 6);
+          } else {
+            xMovement = xPercent * (isOriginal ? 12 : 10);
+            yMovement = yPercent * (isOriginal ? 6 : 4);
+          }
+          
+          gsap.to(cloud, {
+            x: `+=${xMovement}`,
+            y: `+=${yMovement}`,
+            duration: 2, // Slower response
+            ease: "power1.out",
+            overwrite: "auto",
+            force3D: true
+          });
         });
-      });
+      }, 16); // Throttle to ~60fps
     };
 
     // Add mouse interactions
     if (typeof window !== "undefined") {
-      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove, { passive: true });
     }
 
     // Cleanup function
     return () => {
       clearTimeout(timeoutId);
+      clouds.forEach(cloud => {
+        if (cloud) gsap.killTweensOf(cloud);
+      });
       if (typeof window !== "undefined") {
         window.removeEventListener("mousemove", handleMouseMove);
       }
@@ -261,7 +278,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         const clouds = cloudRefs.current;
         const contentWrapper = contentWrapperRef.current;
         
-        // Set initial states to match HeroSection ForegroundClouds positions exactly
+        // Set initial states for all cloud layers with hardware acceleration
         clouds.forEach((cloud, index) => {
           const isOriginal = index < 4;
           const baseIndex = index % 4;
@@ -269,52 +286,55 @@ export default function PageTransition({ children }: PageTransitionProps) {
           const scaleMultiplier = isOriginal ? 1 : 0.8;
           
           if (baseIndex === 0) {
-            // Start from exact HeroSection position for lowCloud3
+            // Start from HeroSection position for lowCloud3
             gsap.set(cloud, { 
               x: 350 + (offsetMultiplier * 100), 
               y: -600, // Start off-screen for diving effect
               scale: 6 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity 
+              opacity: cloudLayers[index].opacity,
+              force3D: true // Hardware acceleration
             });
           } else if (baseIndex === 1) {
-            // Start from exact HeroSection position for lowCloud1  
+            // Start from HeroSection position for lowCloud1  
             gsap.set(cloud, { 
               x: 300 + (offsetMultiplier * 120), 
               y: -650, 
               scale: 5 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity 
+              opacity: cloudLayers[index].opacity,
+              force3D: true
             });
           } else if (baseIndex === 2) {
-            // Start from exact HeroSection position for highCloud2
+            // Start from HeroSection position for highCloud2
             gsap.set(cloud, { 
               x: 200 + (offsetMultiplier * 140), 
               y: -700, 
               scale: 4 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity 
+              opacity: cloudLayers[index].opacity,
+              force3D: true
             });
           } else if (baseIndex === 3) {
-            // Start from exact HeroSection position for highCloud1
+            // Start from HeroSection position for highCloud1
             gsap.set(cloud, { 
               x: 100 + (offsetMultiplier * 160), 
               y: -750, 
               scale: 3.5 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity 
+              opacity: cloudLayers[index].opacity,
+              force3D: true
             });
           }
         });
         
         gsap.set(contentWrapper, { opacity: 0, y: 0 });
         
-        // Create entrance timeline with staggered cloud animations
+        // Create entrance timeline with staggered cloud animations and hardware acceleration
         const entranceTl = gsap.timeline();
         
-        // Animate clouds flowing downward to cover the screen (diving effect)
+        // Animate all clouds flowing downward to cover the screen (diving effect)
         clouds.forEach((cloud, index) => {
           const layer = cloudLayers[index];
           const isOriginal = index < 4;
           const baseIndex = index % 4;
           const offsetMultiplier = isOriginal ? 1 : -1;
-         
           
           // Stagger timing for natural flow
           const delay = (baseIndex * 0.08) + (isOriginal ? 0 : 0.04);
@@ -326,6 +346,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
+              force3D: true
             }, delay);
           } else if (baseIndex === 1) {
             // Another lower cloud flows down
@@ -334,6 +355,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
+              force3D: true
             }, delay);
           } else if (baseIndex === 2) {
             // High cloud flows down
@@ -343,6 +365,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
+              force3D: true
             }, delay);
           } else if (baseIndex === 3) {
             // Top layer high cloud flows down
@@ -351,6 +374,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
               opacity: layer.opacity,
               duration: 1.8,
               ease: "power2.out",
+              force3D: true
             }, delay);
           }
         });
@@ -367,40 +391,48 @@ export default function PageTransition({ children }: PageTransitionProps) {
         }, "-=1.0"); // Start content fade-in earlier for better diving effect
         
       } else if (showProjectTransition && containerRef.current) {
-        // Project transition: Cloud parting effect
+        // Improved project transition: Smoother fade effect
         const contentWrapper = contentWrapperRef.current;
         const overlay = projectOverlayRef.current;
         
         if (contentWrapper && overlay) {
-          // Set initial states
-          gsap.set(contentWrapper, { opacity: 0, scale: 0.9, y: 30 });
+          // Set initial states with hardware acceleration
+          gsap.set(contentWrapper, { 
+            opacity: 0, 
+            scale: 0.95, 
+            y: 20,
+            force3D: true // Hardware acceleration
+          });
           gsap.set(overlay, { 
             opacity: 1,
-            background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.8) 0%, rgba(255, 255, 255, 0.9) 40%, rgba(240, 248, 255, 1) 100%)"
+            background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
+            force3D: true // Hardware acceleration
           });
           
-          // Create project entrance timeline
+          // Create smoother project entrance timeline
           const projectTl = gsap.timeline();
           
-          // Cloud parting effect - overlay fades and "parts" outward
+          // Smoother overlay fade - reduced intensity and faster
           projectTl.to(overlay, {
             opacity: 0,
-            scale: 1.2,
-            duration: 1.0,
-            ease: "power2.out"
+            scale: 1.1, // Reduced scale change
+            duration: 0.6, // Faster transition
+            ease: "power1.out", // Smoother easing
+            force3D: true
           }, 0);
           
-          // Content emerges from behind the "parting clouds"
+          // Content emerges more smoothly
           projectTl.to(contentWrapper, {
             opacity: 1,
             scale: 1,
             y: 0,
-            duration: 1.2,
-            ease: "back.out(1.2)",
+            duration: 0.8, // Slightly longer content fade
+            ease: "power1.out", // Smoother easing
+            force3D: true,
             onComplete: () => {
               setIsTransitioning(false);
             }
-          }, 0.3);
+          }, 0.2); // Slightly later start for smoother overlap
         }
       } else if (showHomeTransition && containerRef.current) {
         // Simple home transition: Clean fade effect without clouds
@@ -443,22 +475,30 @@ export default function PageTransition({ children }: PageTransitionProps) {
             style={{ zIndex: -10 }}
           />
           
-          {/* Background Cloud Layers */}
+          {/* Background Cloud Layers - Simplified */}
           {cloudLayers.map((layer, index) => (
             <div
-              key={`${layer.src}-${index}`}
+              key={`transition-${layer.src}-${index}`}
               ref={(el) => {
                 if (el) cloudRefs.current[index] = el;
               }}
               className="absolute inset-0 h-full w-full overflow-hidden"
-              style={{ zIndex: layer.zIndex }}
+              style={{ 
+                zIndex: layer.zIndex,
+                willChange: 'transform', // Optimize for animations
+                backfaceVisibility: 'hidden' // Prevent flickering
+              }}
             >
               <Image
                 src={layer.src}
                 alt={layer.alt}
                 fill
                 className="h-full w-full object-cover"
-                style={{ opacity: layer.opacity }}
+                style={{ 
+                  opacity: layer.opacity,
+                  transform: 'translateZ(0)', // Force hardware acceleration
+                  backfaceVisibility: 'hidden' // Prevent flickering
+                }}
                 priority
               />
             </div>
@@ -472,18 +512,28 @@ export default function PageTransition({ children }: PageTransitionProps) {
         </div>
       )}
 
-      {/* Project Transition Overlay - Cloud parting effect */}
+      {/* Project Transition Overlay - Optimized fade effect */}
       {showProjectTransition && (
         <div 
           ref={projectOverlayRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 15 }}
+          style={{ 
+            zIndex: 15,
+            backfaceVisibility: 'hidden', // Prevent flickering
+            transform: 'translateZ(0)' // Force hardware acceleration
+          }}
         />
       )}
 
       {/* Page Content */}
       <div ref={newPageRef} className="relative w-full h-full" style={{ zIndex: 20 }}>
-        <div ref={contentWrapperRef}>
+        <div 
+          ref={contentWrapperRef}
+          style={{ 
+            backfaceVisibility: 'hidden', // Prevent flickering
+            transform: 'translateZ(0)' // Force hardware acceleration
+          }}
+        >
           {displayedContent}
         </div>
       </div>
