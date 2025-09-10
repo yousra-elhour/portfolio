@@ -1,5 +1,7 @@
 "use client";
 
+import LoadingScreen from "./LoadingScreen";
+
 export default function Client({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <LoadingScreen>{children}</LoadingScreen>;
 }

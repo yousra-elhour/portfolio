@@ -22,12 +22,7 @@ html {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: #1f2937; /* Solid fallback background to match cloud background */
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   overflow-x: hidden;
@@ -36,6 +31,88 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+/* Prevent layout shifts during loading */
+.loading-skeleton {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.loading-skeleton.loaded {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Optimize image loading to prevent shifts */
+img {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px; /* Reasonable default height */
+}
+
+/* Prevent cloud animation flash during initial load - more aggressive hiding */
+.clouds-container {
+  opacity: 0 !important;
+  visibility: hidden;
+  transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.clouds-container.initialized {
+  opacity: 1 !important;
+  visibility: visible;
+}
+
+/* Hide all cloud images by default until JavaScript takes control, but NOT the background image */
+.clouds-container img:not(.bg-image) {
+  opacity: 0 !important;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.clouds-container.initialized img:not(.bg-image) {
+  transition: none; /* Let GSAP handle the animation */
+}
+
+/* Keep background image always visible */
+.clouds-container .bg-image {
+  opacity: 1 !important;
+}
+
+/* Hide all cloud layers during server-side rendering */
+.cloud-layer {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.clouds-container.initialized .cloud-layer {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure cloud containers maintain their space during loading */
+.cloud-container {
+  min-height: 100vh;
+  contain: layout style paint;
+}
+
+/* Fade in animation for loaded content */
+.fade-in-animation {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 body::-webkit-scrollbar {
   width: 0.01px;
   background: transparent;
