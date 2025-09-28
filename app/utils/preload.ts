@@ -31,11 +31,23 @@ export const waitForFonts = () => {
   if (typeof window === 'undefined') return Promise.resolve();
   
   if (document.fonts && document.fonts.ready) {
-    return document.fonts.ready;
+    // Wait for both document fonts and specific font families
+    return Promise.all([
+      document.fonts.ready,
+      // Additional check for specific fonts
+      document.fonts.load('400 16px var(--font-title)').catch(() => {}),
+      document.fonts.load('300 16px var(--font-sans)').catch(() => {}),
+      document.fonts.load('400 16px var(--font-pixelify)').catch(() => {}),
+      document.fonts.load('400 16px var(--font-bhavuka)').catch(() => {}),
+    ]).then(() => {
+      // Additional safety delay to ensure fonts are fully applied
+      return new Promise<void>(resolve => setTimeout(resolve, 100));
+    });
   }
   
   // Fallback for browsers without font loading API
   return new Promise<void>((resolve) => {
-    setTimeout(resolve, 1000);
+    // Longer timeout to ensure fonts are loaded
+    setTimeout(resolve, 1500);
   });
 };

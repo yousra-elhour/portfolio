@@ -17,9 +17,15 @@ export default function LoadingScreen({ children }: LoadingScreenProps) {
   useEffect(() => {
     const loadResources = async () => {
       try {
+        // Add class to body to indicate fonts are loading
+        document.body.classList.add('fonts-loading');
+        
         // Load fonts first
         waitForFonts().then(() => {
           setLoadingState(prev => ({ ...prev, fonts: true }));
+          // Remove loading class and add loaded class
+          document.body.classList.remove('fonts-loading');
+          document.body.classList.add('fonts-loaded');
         });
 
         // Load images
@@ -34,6 +40,8 @@ export default function LoadingScreen({ children }: LoadingScreenProps) {
       } catch (error) {
         console.warn('Some resources failed to load:', error);
         // Still mark as ready even if some resources fail
+        document.body.classList.remove('fonts-loading');
+        document.body.classList.add('fonts-loaded');
         setTimeout(() => {
           setLoadingState(prev => ({ 
             fonts: true, 
@@ -48,17 +56,8 @@ export default function LoadingScreen({ children }: LoadingScreenProps) {
   }, []);
 
   return (
-    <div 
-      className="min-h-screen"
-      style={{
-        background: `
-          linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-          url('/clouds/bg.png') center/cover no-repeat,
-          #1f2937
-        `
-      }}
-    >
-      {/* Always render content but control visibility */}
+   
+     
       <div 
         className={`transition-opacity duration-1000 ease-out ${
           loadingState.fonts 
@@ -74,6 +73,6 @@ export default function LoadingScreen({ children }: LoadingScreenProps) {
       >
         {children}
       </div>
-    </div>
+   
   );
 }

@@ -30,6 +30,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Apply Montserrat as default font to prevent FOUT */
+  font-family: var(--font-sans), Montserrat, Arial, sans-serif;
 }
 
 /* Prevent layout shifts during loading */
@@ -42,6 +44,15 @@ body {
 .loading-skeleton.loaded {
   visibility: visible;
   opacity: 1;
+}
+
+/* Font loading optimization */
+.fonts-loading {
+  visibility: hidden;
+}
+
+.fonts-loaded {
+  visibility: visible;
 }
 
 /* Optimize image loading to prevent shifts */

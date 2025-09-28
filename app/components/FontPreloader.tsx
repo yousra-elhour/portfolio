@@ -2,21 +2,20 @@
 export default function FontPreloader() {
   return (
     <>
-      <link
-        rel="preload"
-        href="/fonts/Bhavuka-Regular.ttf"
-        as="font"
-        type="font/ttf"
-        crossOrigin="anonymous"
-      />
+      {/* Additional font optimizations */}
       <style dangerouslySetInnerHTML={{
         __html: `
+          /* Prevent font swap flash */
           @font-face {
-            font-family: "Bhavuka";
-            src: url("/fonts/Bhavuka-Regular.ttf") format("truetype");
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
+            font-family: 'font-display-fallback';
+            size-adjust: 100%;
+            src: local('Arial');
+          }
+          
+          /* Ensure all font variables are properly loaded */
+          .font-loading-complete {
+            visibility: visible;
+            opacity: 1;
           }
         `
       }} />

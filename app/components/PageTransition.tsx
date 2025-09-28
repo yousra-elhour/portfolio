@@ -70,6 +70,10 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [showClouds, setShowClouds] = useState(false);
   const [showProjectTransition, setShowProjectTransition] = useState(false);
   const [showHomeTransition, setShowHomeTransition] = useState(false);
+  const animationTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeouts
+  const animationTimelinesRef = useRef<gsap.core.Timeline[]>([]); // Track all timelines
+  const isInitializedRef = useRef(false); // Track if component is initialized
+  const currentPathnameRef = useRef(pathname); // Track current pathname to prevent double execution
 
   // Clouds animation setup - restored full functionality with anti-flickering
   useEffect(() => {
@@ -150,16 +154,24 @@ export default function PageTransition({ children }: PageTransitionProps) {
       });
     };
 
-    // Start continuous animation after entrance animation
+    // Start continuous animation after entrance animation - only if not transitioning
     const timeoutId = setTimeout(() => {
-      setupContinuousAnimation();
-    }, 1800);
+      if (!isTransitioning) {
+        setupContinuousAnimation();
+      }
+    }, 2200); // Increased delay to ensure entrance completes
+    
+    // Store timeout for cleanup
+    animationTimeoutsRef.current.push(timeoutId);
 
     // Optimized mouse parallax effect with throttling
     let mouseTimeout: NodeJS.Timeout;
     const handleMouseMove = (e: MouseEvent) => {
       clearTimeout(mouseTimeout);
       mouseTimeout = setTimeout(() => {
+        // Skip if still transitioning
+        if (isTransitioning) return;
+        
         const { clientX, clientY } = e;
         const { innerWidth, innerHeight } = window;
         
@@ -197,14 +209,27 @@ export default function PageTransition({ children }: PageTransitionProps) {
       }, 16); // Throttle to ~60fps
     };
 
-    // Add mouse interactions
+    // Add mouse interactions only after entrance is done
+    let mouseEventTimeout: NodeJS.Timeout;
     if (typeof window !== "undefined") {
-      window.addEventListener("mousemove", handleMouseMove, { passive: true });
+      mouseEventTimeout = setTimeout(() => {
+        if (!isTransitioning) {
+          window.addEventListener("mousemove", handleMouseMove, { passive: true });
+        }
+      }, 2000);
+      
+      // Store timeout for cleanup
+      animationTimeoutsRef.current.push(mouseEventTimeout);
     }
 
     // Cleanup function
     return () => {
+      // Clear all timeouts
+      animationTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      animationTimeoutsRef.current = [];
+      
       clearTimeout(timeoutId);
+      clearTimeout(mouseEventTimeout);
       clouds.forEach(cloud => {
         if (cloud) gsap.killTweensOf(cloud);
       });
@@ -212,9 +237,20 @@ export default function PageTransition({ children }: PageTransitionProps) {
         window.removeEventListener("mousemove", handleMouseMove);
       }
     };
-  }, [showClouds]);
+  }, [showClouds, isTransitioning]); // Added isTransitioning dependency
 
   useEffect(() => {
+    // Prevent double execution for the same pathname
+    if (currentPathnameRef.current === pathname && isInitializedRef.current) {
+      return;
+    }
+    
+    // Kill any existing animations immediately to prevent conflicts
+    animationTimelinesRef.current.forEach(timeline => timeline.kill());
+    animationTimelinesRef.current = [];
+    animationTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    animationTimeoutsRef.current = [];
+    
     // If this is a navigation (not initial load)
     if (globalPreviousPath && globalPreviousPath !== pathname) {
       // Check if we should show clouds for this transition
@@ -222,33 +258,77 @@ export default function PageTransition({ children }: PageTransitionProps) {
       const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
       const shouldShowHome = shouldShowHomeTransition(globalPreviousPath, pathname);
       
-      setShowClouds(shouldShow);
-      setShowProjectTransition(shouldShowProject);
-      setShowHomeTransition(shouldShowHome);
+      // Use a single state update to prevent multiple re-renders
+      const newTransitionState = {
+        showClouds: shouldShow,
+        showProjectTransition: shouldShowProject,
+        showHomeTransition: shouldShowHome,
+        isTransitioning: shouldShow || shouldShowProject || shouldShowHome,
+        displayedContent: children
+      };
       
-      if (shouldShow || shouldShowProject || shouldShowHome) {
-        // CRITICAL FIX: Update content IMMEDIATELY before transition
-        setDisplayedContent(children);
+      // Batch all state updates
+      setShowClouds(newTransitionState.showClouds);
+      setShowProjectTransition(newTransitionState.showProjectTransition);
+      setShowHomeTransition(newTransitionState.showHomeTransition);
+      setDisplayedContent(newTransitionState.displayedContent);
+      
+      if (newTransitionState.isTransitioning) {
+        // Hide content immediately before starting transition
+        if (contentWrapperRef.current) {
+          gsap.set(contentWrapperRef.current, { opacity: 0 });
+        }
         setIsTransitioning(true);
-      } else {
-        // For non-transition navigations, just update content normally
-        setDisplayedContent(children);
       }
     } else {
-      // For initial load, don't show transitions
-      setShowClouds(false);
-      setShowProjectTransition(false);
-      setShowHomeTransition(false);
-      setDisplayedContent(children);
+      // For initial/direct load - show transition animation if not on home page
+      const isDirectLoad = !globalPreviousPath || !isInitializedRef.current;
+      const isHomePage = pathname === '/';
+      
+      if (isDirectLoad && !isHomePage) {
+        // Simulate coming from home page for direct access
+        const shouldShow = shouldShowClouds('/', pathname);
+        const shouldShowProject = shouldShowProjectTransition('/works', pathname);
+        
+        // Hide content immediately for direct access with transition
+        if (contentWrapperRef.current && (shouldShow || shouldShowProject)) {
+          gsap.set(contentWrapperRef.current, { opacity: 0 });
+        }
+        
+        // Batch state updates
+        setShowClouds(shouldShow);
+        setShowProjectTransition(shouldShowProject);
+        setShowHomeTransition(false);
+        setDisplayedContent(children);
+        setIsTransitioning(shouldShow || shouldShowProject);
+      } else {
+        // For home page or normal loads, don't show transitions
+        setShowClouds(false);
+        setShowProjectTransition(false);
+        setShowHomeTransition(false);
+        setDisplayedContent(children);
+        setIsTransitioning(false);
+        
+        // Ensure content is visible for home page
+        if (contentWrapperRef.current && isHomePage) {
+          gsap.set(contentWrapperRef.current, { opacity: 1, y: 0, scale: 1 });
+        }
+      }
     }
     
+    // Update tracking refs
+    currentPathnameRef.current = pathname;
+    isInitializedRef.current = true;
+    
     // After handling transition, update global state for next navigation
-    setTimeout(() => {
+    const globalStateTimeout = setTimeout(() => {
       if (contentWrapperRef.current) {
         globalPreviousHTML = contentWrapperRef.current.innerHTML;
         globalPreviousPath = pathname;
       }
     }, 100);
+    
+    animationTimeoutsRef.current.push(globalStateTimeout);
     
   }, [pathname, children]);
 
@@ -271,194 +351,265 @@ export default function PageTransition({ children }: PageTransitionProps) {
   }, [pathname]);
 
   useEffect(() => {
-    // Handle transition animations
-    if (isTransitioning) {
-      if (showClouds && containerRef.current) {
-        // Animate clouds and content entrance
-        const clouds = cloudRefs.current;
-        const contentWrapper = contentWrapperRef.current;
+    // Handle transition animations - add guard to prevent double execution
+    if (!isTransitioning || !contentWrapperRef.current) return;
+    
+    const contentWrapper = contentWrapperRef.current;
+    
+    if (showClouds && containerRef.current) {
+      // Animate clouds and content entrance
+      const clouds = cloudRefs.current;
+      
+      // Ensure content is hidden initially
+      gsap.set(contentWrapper, { opacity: 0, y: 0, scale: 1 });
+      
+      // Set initial states for all cloud layers with hardware acceleration
+      clouds.forEach((cloud, index) => {
+        if (!cloud) return;
         
-        // Set initial states for all cloud layers with hardware acceleration
-        clouds.forEach((cloud, index) => {
-          const isOriginal = index < 4;
-          const baseIndex = index % 4;
-          const offsetMultiplier = isOriginal ? 1 : -1;
-          const scaleMultiplier = isOriginal ? 1 : 0.8;
-          
-          if (baseIndex === 0) {
-            // Start from HeroSection position for lowCloud3
-            gsap.set(cloud, { 
-              x: 350 + (offsetMultiplier * 100), 
-              y: -600, // Start off-screen for diving effect
-              scale: 6 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity,
-              force3D: true // Hardware acceleration
-            });
-          } else if (baseIndex === 1) {
-            // Start from HeroSection position for lowCloud1  
-            gsap.set(cloud, { 
-              x: 300 + (offsetMultiplier * 120), 
-              y: -650, 
-              scale: 5 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity,
-              force3D: true
-            });
-          } else if (baseIndex === 2) {
-            // Start from HeroSection position for highCloud2
-            gsap.set(cloud, { 
-              x: 200 + (offsetMultiplier * 140), 
-              y: -700, 
-              scale: 4 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity,
-              force3D: true
-            });
-          } else if (baseIndex === 3) {
-            // Start from HeroSection position for highCloud1
-            gsap.set(cloud, { 
-              x: 100 + (offsetMultiplier * 160), 
-              y: -750, 
-              scale: 3.5 * scaleMultiplier, 
-              opacity: cloudLayers[index].opacity,
-              force3D: true
-            });
-          }
-        });
+        const isOriginal = index < 4;
+        const baseIndex = index % 4;
+        const offsetMultiplier = isOriginal ? 1 : -1;
+        const scaleMultiplier = isOriginal ? 1 : 0.8;
         
-        gsap.set(contentWrapper, { opacity: 0, y: 0 });
+        if (baseIndex === 0) {
+          // Start from HeroSection position for lowCloud3
+          gsap.set(cloud, { 
+            x: 350 + (offsetMultiplier * 100), 
+            y: -600, // Start off-screen for diving effect
+            scale: 6 * scaleMultiplier, 
+            opacity: cloudLayers[index].opacity,
+            force3D: true // Hardware acceleration
+          });
+        } else if (baseIndex === 1) {
+          // Start from HeroSection position for lowCloud1  
+          gsap.set(cloud, { 
+            x: 300 + (offsetMultiplier * 120), 
+            y: -650, 
+            scale: 5 * scaleMultiplier, 
+            opacity: cloudLayers[index].opacity,
+            force3D: true
+          });
+        } else if (baseIndex === 2) {
+          // Start from HeroSection position for highCloud2
+          gsap.set(cloud, { 
+            x: 200 + (offsetMultiplier * 140), 
+            y: -700, 
+            scale: 4 * scaleMultiplier, 
+            opacity: cloudLayers[index].opacity,
+            force3D: true
+          });
+        } else if (baseIndex === 3) {
+          // Start from HeroSection position for highCloud1
+          gsap.set(cloud, { 
+            x: 100 + (offsetMultiplier * 160), 
+            y: -750, 
+            scale: 3.5 * scaleMultiplier, 
+            opacity: cloudLayers[index].opacity,
+            force3D: true
+          });
+        }
+      });
+      
+      // Create entrance timeline with staggered cloud animations and hardware acceleration
+      const entranceTl = gsap.timeline({
+        onComplete: () => {
+          setIsTransitioning(false);
+        }
+      });
+      animationTimelinesRef.current.push(entranceTl); // Track timeline
+      
+      // Add fallback timeout to ensure animation completes
+      const fallbackTimeout = setTimeout(() => {
+        console.warn('Cloud animation fallback triggered - ensuring content visibility');
+        gsap.set(contentWrapper, { opacity: 1, y: 0 });
+        setIsTransitioning(false);
+      }, 3500); // 3.5 seconds fallback
+      
+      animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
+      
+      // Animate all clouds flowing downward to cover the screen (diving effect)
+      clouds.forEach((cloud, index) => {
+        if (!cloud) return;
         
-        // Create entrance timeline with staggered cloud animations and hardware acceleration
-        const entranceTl = gsap.timeline();
+        const layer = cloudLayers[index];
+        const isOriginal = index < 4;
+        const baseIndex = index % 4;
+        const offsetMultiplier = isOriginal ? 1 : -1;
         
-        // Animate all clouds flowing downward to cover the screen (diving effect)
-        clouds.forEach((cloud, index) => {
-          const layer = cloudLayers[index];
-          const isOriginal = index < 4;
-          const baseIndex = index % 4;
-          const offsetMultiplier = isOriginal ? 1 : -1;
-          
-          // Stagger timing for natural flow
-          const delay = (baseIndex * 0.08) + (isOriginal ? 0 : 0.04);
-          
-          if (baseIndex === 0) {
-            // Lower cloud flows down to cover screen
-            entranceTl.to(cloud, {    
-              y: 350 + (offsetMultiplier * 50),
-              opacity: layer.opacity,
-              duration: 1.8,
-              ease: "power2.out",
-              force3D: true
-            }, delay);
-          } else if (baseIndex === 1) {
-            // Another lower cloud flows down
-            entranceTl.to(cloud, { 
-              y: 120 + (offsetMultiplier * 60),
-              opacity: layer.opacity,
-              duration: 1.8,
-              ease: "power2.out",
-              force3D: true
-            }, delay);
-          } else if (baseIndex === 2) {
-            // High cloud flows down
-            entranceTl.to(cloud, { 
-              y: -10 + (offsetMultiplier * 40),    
-              x: -50 + (offsetMultiplier * 20),      
-              opacity: layer.opacity,
-              duration: 1.8,
-              ease: "power2.out",
-              force3D: true
-            }, delay);
-          } else if (baseIndex === 3) {
-            // Top layer high cloud flows down
-            entranceTl.to(cloud, { 
-              y: 320 + (offsetMultiplier * 30),       
-              opacity: layer.opacity,
-              duration: 1.8,
-              ease: "power2.out",
-              force3D: true
-            }, delay);
-          }
-        });
+        // Stagger timing for natural flow
+        const delay = (baseIndex * 0.08) + (isOriginal ? 0 : 0.04);
         
-        // Then animate content with a "emerging from clouds" effect
-        entranceTl.to(contentWrapper, {
+        if (baseIndex === 0) {
+          // Lower cloud flows down to cover screen
+          entranceTl.to(cloud, {    
+            y: 350 + (offsetMultiplier * 50),
+            opacity: layer.opacity,
+            duration: 1.8,
+            ease: "power2.out",
+            force3D: true
+          }, delay);
+        } else if (baseIndex === 1) {
+          // Another lower cloud flows down
+          entranceTl.to(cloud, { 
+            y: 120 + (offsetMultiplier * 60),
+            opacity: layer.opacity,
+            duration: 1.8,
+            ease: "power2.out",
+            force3D: true
+          }, delay);
+        } else if (baseIndex === 2) {
+          // High cloud flows down
+          entranceTl.to(cloud, { 
+            y: -10 + (offsetMultiplier * 40),    
+            x: -50 + (offsetMultiplier * 20),      
+            opacity: layer.opacity,
+            duration: 1.8,
+            ease: "power2.out",
+            force3D: true
+          }, delay);
+        } else if (baseIndex === 3) {
+          // Top layer high cloud flows down
+          entranceTl.to(cloud, { 
+            y: 320 + (offsetMultiplier * 30),       
+            opacity: layer.opacity,
+            duration: 1.8,
+            ease: "power2.out",
+            force3D: true
+          }, delay);
+        }
+      });
+      
+      // Then animate content with a "emerging from clouds" effect
+      entranceTl.to(contentWrapper, {
+        opacity: 1,
+        y: 0,
+        duration: 1.2,
+        ease: "power2.out",
+        onComplete: () => {
+          clearTimeout(fallbackTimeout);
+        }
+      }, "-=1.0"); // Start content fade-in earlier for better diving effect
+      
+    } else if (showProjectTransition && containerRef.current) {
+      // Improved project transition: Smoother fade effect
+      const overlay = projectOverlayRef.current;
+      
+      if (overlay) {
+        // Ensure content is hidden initially
+        gsap.set(contentWrapper, { opacity: 0, scale: 0.95, y: 20 });
+        
+        // Add fallback timeout
+        const fallbackTimeout = setTimeout(() => {
+          console.warn('Project animation fallback triggered');
+          gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
+          gsap.set(overlay, { opacity: 0 });
+          setIsTransitioning(false);
+        }, 1500);
+        
+        animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
+        
+        // Set initial states with hardware acceleration
+        gsap.set(overlay, { 
           opacity: 1,
-          y: 0,
-          duration: 1.2,
-          ease: "power2.out",
+          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
+          force3D: true // Hardware acceleration
+        });
+        
+        // Create smoother project entrance timeline
+        const projectTl = gsap.timeline({
           onComplete: () => {
+            clearTimeout(fallbackTimeout);
             setIsTransitioning(false);
           }
-        }, "-=1.0"); // Start content fade-in earlier for better diving effect
+        });
+        animationTimelinesRef.current.push(projectTl); // Track timeline
         
-      } else if (showProjectTransition && containerRef.current) {
-        // Improved project transition: Smoother fade effect
-        const contentWrapper = contentWrapperRef.current;
-        const overlay = projectOverlayRef.current;
+        // Smoother overlay fade - reduced intensity and faster
+        projectTl.to(overlay, {
+          opacity: 0,
+          scale: 1.1, // Reduced scale change
+          duration: 0.6, // Faster transition
+          ease: "power1.out", // Smoother easing
+          force3D: true
+        }, 0);
         
-        if (contentWrapper && overlay) {
-          // Set initial states with hardware acceleration
-          gsap.set(contentWrapper, { 
-            opacity: 0, 
-            scale: 0.95, 
-            y: 20,
-            force3D: true // Hardware acceleration
-          });
-          gsap.set(overlay, { 
-            opacity: 1,
-            background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
-            force3D: true // Hardware acceleration
-          });
-          
-          // Create smoother project entrance timeline
-          const projectTl = gsap.timeline();
-          
-          // Smoother overlay fade - reduced intensity and faster
-          projectTl.to(overlay, {
-            opacity: 0,
-            scale: 1.1, // Reduced scale change
-            duration: 0.6, // Faster transition
-            ease: "power1.out", // Smoother easing
-            force3D: true
-          }, 0);
-          
-          // Content emerges more smoothly
-          projectTl.to(contentWrapper, {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.8, // Slightly longer content fade
-            ease: "power1.out", // Smoother easing
-            force3D: true,
-            onComplete: () => {
-              setIsTransitioning(false);
-            }
-          }, 0.2); // Slightly later start for smoother overlap
-        }
-      } else if (showHomeTransition && containerRef.current) {
-        // Simple home transition: Clean fade effect without clouds
-        const contentWrapper = contentWrapperRef.current;
-        
-        if (contentWrapper) {
-          // Set initial state
-          gsap.set(contentWrapper, { opacity: 0, y: 20 });
-          
-          // Create simple fade-in timeline
-          const homeTl = gsap.timeline();
-          
-          // Simple fade in with slight upward movement
-          homeTl.to(contentWrapper, {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power2.out",
-            onComplete: () => {
-              setIsTransitioning(false);
-            }
-          });
-        }
+        // Content emerges more smoothly
+        projectTl.to(contentWrapper, {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.8, // Slightly longer content fade
+          ease: "power1.out", // Smoother easing
+          force3D: true
+        }, 0.2); // Slightly later start for smoother overlap
       }
+    } else if (showHomeTransition && containerRef.current) {
+      // Simple home transition: Clean fade effect without clouds
+      // Ensure content is hidden initially
+      gsap.set(contentWrapper, { opacity: 0, y: 20, scale: 1 });
+      
+      // Add fallback timeout
+      const fallbackTimeout = setTimeout(() => {
+        console.warn('Home animation fallback triggered');
+        gsap.set(contentWrapper, { opacity: 1, y: 0 });
+        setIsTransitioning(false);
+      }, 1200);
+      
+      animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
+      
+      // Create simple fade-in timeline
+      const homeTl = gsap.timeline({
+        onComplete: () => {
+          clearTimeout(fallbackTimeout);
+          setIsTransitioning(false);
+        }
+      });
+      animationTimelinesRef.current.push(homeTl); // Track timeline
+      
+      // Simple fade in with slight upward movement
+      homeTl.to(contentWrapper, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: "power2.out"
+      });
     }
   }, [isTransitioning, showClouds, showProjectTransition, showHomeTransition]);
+
+  // Handle children prop changes separately to prevent double animations
+  useEffect(() => {
+    if (!isTransitioning && !showClouds && !showProjectTransition && !showHomeTransition) {
+      setDisplayedContent(children);
+      // Ensure content is visible when not transitioning
+      if (contentWrapperRef.current) {
+        gsap.set(contentWrapperRef.current, { opacity: 1, y: 0, scale: 1 });
+      }
+    }
+  }, [children, isTransitioning, showClouds, showProjectTransition, showHomeTransition]);
+
+  // Cleanup on unmount to prevent memory leaks and stuck animations
+  useEffect(() => {
+    return () => {
+      // Clear all tracked timeouts
+      animationTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      animationTimeoutsRef.current = [];
+      
+      // Kill all tracked timelines
+      animationTimelinesRef.current.forEach(timeline => timeline.kill());
+      animationTimelinesRef.current = [];
+      
+      // Kill any remaining GSAP animations on cloud refs
+      cloudRefs.current.forEach(cloud => {
+        if (cloud) gsap.killTweensOf(cloud);
+      });
+      
+      // Ensure content is visible
+      if (contentWrapperRef.current) {
+        gsap.set(contentWrapperRef.current, { opacity: 1, y: 0, scale: 1 });
+      }
+    };
+  }, []);
 
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">
@@ -529,9 +680,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
       <div ref={newPageRef} className="relative w-full h-full" style={{ zIndex: 20 }}>
         <div 
           ref={contentWrapperRef}
+          className={isTransitioning ? "opacity-0" : ""}
           style={{ 
             backfaceVisibility: 'hidden', // Prevent flickering
-            transform: 'translateZ(0)' // Force hardware acceleration
+            transform: 'translateZ(0)', // Force hardware acceleration
+            opacity: (!isTransitioning && !showClouds && !showProjectTransition && !showHomeTransition) ? 1 : undefined
           }}
         >
           {displayedContent}

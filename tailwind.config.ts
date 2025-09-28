@@ -15,10 +15,11 @@ const config: Config = {
       },
 
       fontFamily: {
-        lead: ["var(--font-bhavuka)"],
-        sans: ["Monsterrat", "Arial", "sans-serif"],
-        title: ["var(--font-title)"],
-        pixelify: ["var(--font-pixelify)"],
+        lead: ["var(--font-pixelify)", "monospace"], // Use Pixelify Sans for hero sections
+        sans: ["var(--font-sans)", "Montserrat", "Arial", "sans-serif"], // Montserrat as default
+        title: ["var(--font-title)", "serif"], // Marcellus SC for elegant titles
+        pixelify: ["var(--font-pixelify)", "monospace"], // Pixelify Sans alias
+        bhavuka: ["var(--font-bhavuka)", "serif"], // Keep Bhavuka available if needed
       },
     },
   },

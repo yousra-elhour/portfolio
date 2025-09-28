@@ -1,7 +1,5 @@
 "use client";
 
-import localFont from "next/font/local";
-import { Pixelify_Sans } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -9,21 +7,6 @@ import ForegroundClouds from "./ForegroundClouds";
 import CloudsAnimation from "./CloudsAnimation";
 import TransitionLink from "./TransitionLink";
 import FloatingStars from "./FloatingStars";
-
-const bhavuka = localFont({
-  src: [
-    {
-      path: "../../public/fonts/Bhavuka-Regular.ttf",
-    },
-  ],
-  variable: "--font-bhavuka",
-});
-
-const pixelifySans = Pixelify_Sans({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-pixelify",
-});
 
 export default function HeroSection() {
   const containerVariants = {
@@ -71,7 +54,7 @@ export default function HeroSection() {
   return (
     <div className="bg-gray-900">
       <div
-        className={`relative isolate overflow-hidden ${bhavuka.variable} ${pixelifySans.variable} font-lead `}
+        className={`relative isolate overflow-hidden font-lead `}
       >
           <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
         {""}
