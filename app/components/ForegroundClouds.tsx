@@ -10,13 +10,43 @@ interface CloudLayer {
   opacity: number;
   speed: number;
   zIndex: number;
+  position: {
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
+  };
+  scale: number;
 }
 
 const foregroundCloudLayers: CloudLayer[] = [
-  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.7, speed: 0.5, zIndex: 10 },
-  { src: "/clouds/lowCloud1.png", alt: "Foreground Low Clouds", opacity: 0.4, speed: 0.5, zIndex: 12 },
-  { src: "/clouds/highCloud2.png", alt: "Foreground High Clouds", opacity: 0.6, speed: 1.2, zIndex: 14 },
-  { src: "/clouds/highCloud1.png", alt: "Top Layer High Clouds", opacity: 0.8, speed: 1.5, zIndex: 16 },
+  { 
+    src: "/clouds/lowCloud3.png", 
+    alt: "Foreground Low Clouds", 
+    opacity: 0.35, 
+    speed: 0.3, 
+    zIndex: 100000,
+    scale: 0.8,
+    position: { bottom: "5%", right: "0%" }
+  },
+  { 
+    src: "/clouds/highCloud2.png", 
+    alt: "Foreground High Clouds", 
+    opacity: 0.25, 
+    speed: 0.5, 
+    zIndex: 48,
+    scale: 0.6,
+    position: { top: "10%", right: "10%" }
+  },
+  { 
+    src: "/clouds/lowCloud2.png", 
+    alt: "Mid Layer Clouds", 
+    opacity: 0.3, 
+    speed: 0.4, 
+    zIndex: 46,
+    scale: 0.7,
+    position: { bottom: "20%", right: "20%" }
+  },
 ];
 
 export default function ForegroundClouds() {
@@ -41,25 +71,28 @@ export default function ForegroundClouds() {
       
       // Set initial positions with hardware acceleration
       gsap.set(cloud, { 
-        scale: index === 0 ? 2 : index === 1 ? 1.5 : 2,
+        scale: layer.scale,
         opacity: layer.opacity,
-        x: index === 0 ? 350 : index === 1 ? 300 : index === 2 ? 200 : 100,
-        y: index === 0 ? 200 : index === 1 ? 200 : index === 2 ? 100 : -70,
-        force3D: true, // Enable hardware acceleration
+        x: 0,
+        y: 0,
+        rotation: gsap.utils.random(-2, 2),
+        force3D: true,
         transformOrigin: "center center"
       });
       
-      // Create smoother animations with reduced complexity
+      // Create floating animations
+      const isReverse = index % 2 === 1;
       gsap.to(cloud, {
-        x: index === 0 ? 20 : index === 1 ? 20 : index === 2 ? -100 : -200,
-        y: index === 0 ? 180 : index === 1 ? 180 : index === 2 ? 100 : -100,
-        rotation: index % 2 === 0 ? 1 : -1, // Subtle rotation
-        scale: index === 0 ? 2.5 : index === 1 ? 1.2 : index === 2 ? 2 : 2,
-        duration: 30 + (index * 3), // Slower, more stable animation
-        ease: "none", // Linear ease to prevent stuttering
+        x: isReverse ? -30 : 30,
+        y: gsap.utils.random(-20, 20),
+        rotation: gsap.utils.random(-1, 1),
+        scale: layer.scale + gsap.utils.random(-0.1, 0.1),
+        duration: 25 + (index * 3),
+        ease: "none",
         repeat: -1,
         yoyo: true,
-        force3D: true
+        force3D: true,
+        delay: index * 0.1,
       });
     });
 
@@ -89,23 +122,23 @@ export default function ForegroundClouds() {
           let xMovement, yMovement;
           
           if (layer.alt.includes('High')) {
-            xMovement = xPercent * 15; // Reduced movement
-            yMovement = yPercent * 8;
-          } else {
-            xMovement = xPercent * 10;
+            xMovement = xPercent * 8;
             yMovement = yPercent * 5;
+          } else {
+            xMovement = xPercent * 5;
+            yMovement = yPercent * 3;
           }
           
           mouseAnimationRef.current?.to(cloud, {
             x: `+=${xMovement}`,
             y: `+=${yMovement}`,
-            duration: 2, // Slower response
+            duration: 2,
             ease: "power1.out",
             overwrite: "auto",
             force3D: true
           }, 0);
         });
-      }, 16); // Throttle to ~60fps
+      }, 16);
     };
 
     if (typeof window !== "undefined") {
@@ -127,18 +160,24 @@ export default function ForegroundClouds() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full z-[100] pointer-events-none">      
+    <div 
+      ref={containerRef} 
+      className="absolute inset-0 w-full h-full pointer-events-none"
+    >      
       {foregroundCloudLayers.map((layer, index) => (
         <div
-          key={`${layer.src}-${index}`} // More stable key
+          key={`foreground-cloud-${index}`}
           ref={(el) => {
             if (el) cloudRefs.current[index] = el;
           }}
-          className="absolute inset-0 h-full w-full overflow-hidden"
+          className="absolute overflow-hidden"
           style={{ 
             zIndex: layer.zIndex,
-            willChange: 'transform', // Optimize for animations
-            backfaceVisibility: 'hidden' // Prevent flickering
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+            ...layer.position,
+            width: '50%',
+            height: '50%',
           }}
         >
           <Image
@@ -148,8 +187,9 @@ export default function ForegroundClouds() {
             className="h-full w-full object-cover"
             style={{ 
               opacity: layer.opacity,
-              transform: 'translateZ(0)', // Force hardware acceleration
-              backfaceVisibility: 'hidden' // Prevent flickering
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              mixBlendMode: 'normal',
             }}
             priority
           />
