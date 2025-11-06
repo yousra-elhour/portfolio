@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import ForegroundClouds from "./ForegroundClouds";
+import HeroForegroundClouds from "./HeroForegroundClouds";
 import CloudsAnimation from "./CloudsAnimation";
 import TransitionLink from "./TransitionLink";
 import FloatingStars from "./FloatingStars";
@@ -89,27 +89,27 @@ export default function HeroSection() {
         >
           <div className="text-center relative z-50">
             <motion.h1
-              className="font-pixelify lg:text-7xl md:text-6xl sm:text-3xl text-3xl tracking-[.2em] font-bold text-white"
+              className="hero-title font-pixelify lg:text-7xl md:text-6xl sm:text-3xl text-3xl tracking-[.2em] font-bold text-white pb-2"
               variants={itemVariants}
               style={{ textShadow: "0.5px 0.5px 1px rgba(0,0,0,0.3)" }}
             >
               Yousra Elhour
             </motion.h1>
             <motion.p
-              className="font-pixelify lg:mt-4 md:mt-4 lg:text-3xl md:text-2xl sm:text-lg text-lg leading-8 tracking-[.2em] text-gray-200"
+              className="hero-subtitle font-pixelify lg:mt-4 md:mt-4 lg:text-3xl md:text-2xl sm:text-lg text-lg leading-8 tracking-[.2em] text-gray-200"
               variants={itemVariants}
               style={{ textShadow: "0.5px 0.5px 1px rgba(0,0,0,0.3)" }}
             >
               Software Engineer - Designer - Illustrator
             </motion.p>
             <motion.div
-              className="lg:mt-9 mt-5 flex items-center justify-center lg:gap-x-12 md:gap-x-6 sm:gap-x-4 gap-x-4 font-sans font-light lg:tracking-[.4em] md:tracking-[.3em] tracking-[.2em]"
+              className="hero-nav lg:mt-9 mt-5 flex items-center justify-center lg:gap-x-12 md:gap-x-6 sm:gap-x-4 gap-x-4 font-sans font-light lg:tracking-[.4em] md:tracking-[.3em] tracking-[.2em]"
               variants={containerVariants}
             >
               <motion.div variants={linkVariants} whileHover="hover">
                 <TransitionLink
                   href="/about"
-                  className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
+                  className="hero-link lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200 py-1"
                 >
                   ABOUT ME
                 </TransitionLink>
@@ -117,7 +117,7 @@ export default function HeroSection() {
               <motion.div variants={linkVariants} whileHover="hover">
                 <TransitionLink
                   href="/works"
-                  className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
+                  className="hero-link lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200 py-1"
                 >
                   WORKS
                 </TransitionLink>
@@ -125,7 +125,7 @@ export default function HeroSection() {
               <motion.div variants={linkVariants} whileHover="hover">
                 <TransitionLink
                   href="/contact"
-                  className="lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200"
+                  className="hero-link lg:text-lg md:text-md text-xs font-bold hover:text-gray-300 text-white transition-colors duration-200 py-1"
                 >
                   CONTACT
                 </TransitionLink>
@@ -136,7 +136,7 @@ export default function HeroSection() {
         </motion.div>
 
         {/* Foreground Clouds (rendered OUTSIDE the -z-20 container) */}
-        <ForegroundClouds />
+        <HeroForegroundClouds />
 
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"

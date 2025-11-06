@@ -5,6 +5,9 @@ import image from "../../public/images/aaaaUntitled-1 1.jpg";
 import Link from "next/link";
 import Email from "./Email";
 import Nav from "./Nav";
+import NowPlaying from "./NowPlaying";
+import TopAlbums from "./TopAlbums";
+import PhotoCarousel from "./PhotoCarousel";
 
 export default function Works() {
   return (
@@ -40,26 +43,60 @@ export default function Works() {
         </div>
       </div>
 
-      <div className="absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[.4rem] md:tracking-[.25rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-5 lg:text-lg md:text-md text-sm">
-        <p className="lg:mb-10 md:mb-10 mb-5">
-          Hello, I&apos;m a software and front-end engineer with a deep passion
-          for design and illustration. I have experience working in various
-          roles, including front-end engineering, design, and illustration.
-        </p>
-        <p className="mb-10">
-          I recently graduated with a bachelor&apos;s degree from Cardiff
-          Metropolitan University, and I&apos;m constantly eager to expand my
-          knowledge and explore new opportunities.
-        </p>
+      <div className="about-content absolute top-[15%] left-[8%] right-[8%] z-50 font-sans lg:tracking-[0.2rem] md:tracking-[.2rem] tracking-[.2rem] max-w-3xl lg:leading-9 md:leading-9 leading-4 lg:text-lg md:text-md text-sm">
+       <p className="about-paragraph lg:mb-10 md:mb-10 mb-5">
+         Hey, I’m Yousra! I’m a software engineer who’s always been into painting, music, design, anything creative.
+          I play guitar and draw when I can, and I love spending time outdoors, especially hiking and exploring nature.
+          Before studying software engineering, I worked as a freelance illustrator, so creativity has always been part of how I see things.
+      </p>
+      <p className="about-paragraph mb-10">
+        I’m currently in Paris doing my master’s.
+        I love building websites that feel smooth and look good,
+        good UX with an impressive design is what I aim to create.
+       Let's connect!
+      </p>
 
-        <Link
-          href={"/Yousra-Elhour-Resume.pdf"}
-          download
-          className="pb-2 border-b"
-        >
-          Curriculum vitae
-        </Link>
+
+        <div className="flex gap-8">
+          <Link href={"/CV-english.pdf"} download className="pb-2 border-b">
+            English CV
+          </Link>
+          <Link
+            href={"/cv-francais (1).pdf"}
+            download
+            className="pb-2 border-b"
+          >
+            French CV
+          </Link>
+        </div>
       </div>
+
+      {/* Profile Card - Photo + Music */}
+      <div className="fixed top-[25%] lg:right-20 md:right-12 w-72 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-2xl rounded-2xl border border-white/30 p-4 shadow-2xl z-40 hidden lg:block">
+        {/* Photo Carousel */}
+        <div className="mb-4">
+          <PhotoCarousel
+            photos={[
+              { src: "/images/aaaaUntitled-1 1.jpg", alt: "Profile photo 1" },
+              { src: "/images/Desktop - 4.png", alt: "Profile photo 2" },
+            ]}
+          />
+        </div>
+
+        {/* Now Playing */}
+        <div className="mb-4">
+          <NowPlaying />
+        </div>
+
+        {/* Top Albums */}
+        <div>
+          <h3 className="text-white/80 font-bold mb-2 text-[9px] uppercase tracking-widest">
+            Top Albums
+          </h3>
+          <TopAlbums />
+        </div>
+      </div>
+
       <Email />
       <Nav />
     </div>

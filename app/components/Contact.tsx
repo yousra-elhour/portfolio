@@ -39,19 +39,19 @@ export default function Works() {
         </div>
       </div>
 
-      <div className="absolute top-[28%] left-[8%] right-[7%] works z-50 font-sans tracking-[.4rem]  leading-9 text-lg max-w-full">
-        <h1 className="lg:mb-8 md:mb-6 mb-4 font-extrabold lg:text-4xl md:text-3xl text-2xl">
+      <div className="contact-content absolute top-[28%] left-[8%] right-[7%] works z-50 font-sans tracking-[.4rem]  leading-9 text-lg max-w-full">
+        <h1 className="contact-title lg:mb-8 md:mb-6 mb-4 font-extrabold lg:text-4xl md:text-3xl text-2xl">
           CONTACT
         </h1>
-        <hr className="border-0 border-white border-b w-full mb-5" />
+        <hr className="contact-divider border-0 border-white border-b w-full mb-5" />
 
         <div className="lg:flex justify-between px-2">
           <div className="mb-5  gap-4 items-baseline lg:flex md:flex hidden">
-            <p className="font-bold lg:text-md md:text-md text-sm">Email:</p>
+            <p className="contact-label font-bold lg:text-md md:text-md text-sm">Email:</p>
             <span>
               {" "}
               <Link
-                className="lg:text-md md:text-md text-sm"
+                className="contact-text lg:text-md md:text-md text-sm"
                 href={"mailto:elhour.yousra1910@gmail.com"}
               >
                 elhour.yousra1910@gmail.com
@@ -60,16 +60,16 @@ export default function Works() {
           </div>
 
           <div className="mb-5 flex gap-4">
-            <p className="font-bold lg:text-md md:text-md text-sm">
+            <p className="contact-label font-bold lg:text-md md:text-md text-sm">
               Social Media:
             </p>
-            <ul className="flex flex-col gap-3 lg:text-md md:text-md text-sm">
+            <ul className="contact-list flex flex-col gap-3 lg:text-md md:text-md text-sm">
               <li className="flex items-baseline gap-2">
                 <Link
                   target="_blank"
                   href={"https://www.linkedin.com/in/yousra-elhour-978952220/"}
                 >
-                  <MoveUpRight className="h-4 w-4 " />
+                  <MoveUpRight className="contact-icon h-4 w-4 " />
                 </Link>
                 <Link
                   target="_blank"
@@ -83,7 +83,7 @@ export default function Works() {
                   target="_blank"
                   href={"https://www.behance.net/kuroonekoob1fa"}
                 >
-                  <MoveUpRight className="h-4 w-4 " />
+                  <MoveUpRight className="contact-icon h-4 w-4 " />
                 </Link>
                 <Link
                   target="_blank"
@@ -97,7 +97,7 @@ export default function Works() {
                   target="_blank"
                   href={"https://www.artstation.com/cirrusyk"}
                 >
-                  <MoveUpRight className="h-4 w-4 " />
+                  <MoveUpRight className="contact-icon h-4 w-4 " />
                 </Link>
                 <Link
                   target="_blank"

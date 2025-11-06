@@ -21,6 +21,16 @@ const config: Config = {
         pixelify: ["var(--font-pixelify)", "monospace"], // Pixelify Sans alias
         bhavuka: ["var(--font-bhavuka)", "serif"], // Keep Bhavuka available if needed
       },
+      
+      keyframes: {
+        equalizer: {
+          '0%, 100%': { height: '20%' },
+          '50%': { height: '100%' },
+        },
+      },
+      animation: {
+        equalizer: 'equalizer 0.8s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

@@ -6,8 +6,10 @@ import TransitionLink from "./TransitionLink"; // Replace Link import
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MoveUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Email from "./Email";
 import Nav from "./Nav";
+import ForegroundClouds from "./ForegroundClouds";
 
 
 export default function Works() {
@@ -35,6 +37,13 @@ export default function Works() {
     },
 
     {
+      title: "Digital Illustrations",
+      image: "/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg",
+      link: "/works/illustrations",
+      live: "https://www.artstation.com/cirrusyk",
+    },
+
+    {
       title: "University Projects",
       image: "/images/cmu-blue-logo.gif",
       link: "/works/university-projects",
@@ -42,10 +51,20 @@ export default function Works() {
   ];
 
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [animationComplete, setAnimationComplete] = useState(false);
+
+  useEffect(() => {
+    // Enable hover after animation completes (500ms animation + small buffer)
+    const timer = setTimeout(() => {
+      setAnimationComplete(true);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
-      <div className="relative overflow-hidden " ref={parent}>
+      <div className="relative overflow-hidden ">
         {/* <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
           {""}
         </div> */}
@@ -94,60 +113,77 @@ export default function Works() {
           </div>
         </div>
 
-        <div className="absolute top-[15%] left-[8%] works z-50">
+        <div className={`absolute top-[15%] left-[8%] works z-50 ${!animationComplete ? 'pointer-events-none' : ''}`} ref={parent}>
           {data.map((item, index) => (
             <div
               key={index}
-              onMouseEnter={() => setHoveredItem(index)}
+              onMouseEnter={() => animationComplete && setHoveredItem(index)}
               onMouseLeave={() => setHoveredItem(null)}
-              className=" cursor-pointer"
+              className="works-item cursor-pointer"
             >
-              <div className="lg:mb-7 mb-4 flex justify-between items-start gap-20">
+              <div className="works-item-container lg:mb-5 mb-3 flex justify-between items-start gap-20">
                 <TransitionLink
                   href={item.link}
-                  className="lg:pl-4 md:pl-4 pl-2 lg:text-2xl md:text-2xl text-md font-sans tracking-[.4em]  "
+                  className="works-title lg:pl-4 md:pl-4 pl-2 lg:text-xl md:text-xl text-base font-sans tracking-[.4em]"
                 >
                   {item.title}
                 </TransitionLink>
 
                 {item.live && (
                   <TransitionLink target="_blank" href={item.live}>
-                    <MoveUpRight className="lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50" />
+                    <MoveUpRight className="works-icon lg:h-7 lg:w-7 md:h-7 md:w-7 h-5 w-5 z-50" />
                   </TransitionLink>
                 )}
               </div>
 
-              <hr className="border-0 border-white border-b w-full mb-12" />
+              <hr className="works-divider border-0 border-white border-b w-full mb-8" />
             </div>
           ))}
         </div>
-        <Email />
 
-        {hoveredItem !== null && (
-          <div
-            className="absolute bottom-[-3%] right-[-7%] h-[29cqw] aspect-video z-40 lg:block hidden preview "
-            style={{ transition: "all 2s" }}
-          >
-            {data[hoveredItem].image && (
-              <Image
-                width="750"
-                height="500"
-                src={data[hoveredItem].image}
-                alt={data[hoveredItem].title}
-                className="absolute inset-0 z-30 h-full w-full object-cover rounded-xl opacity-70"
-              />
-            )}
-
-            <div
-              className="rounded-xl absolute inset-0 z-40 before:content-[''] before:absolute before:inset-0 before:z-50 opacity-10"
-              style={{
-                background: "linear-gradient(to bottom, #e2ac88, #8592bf)",
-              }}
-            />
-          </div>
-        )}
+        {/* Foreground Clouds - always visible and animated */}
+        <ForegroundClouds />
       </div>
+      
+      <Email />
       <Nav />
+      
+      {/* Preview Image - Rendered as portal to escape stacking context */}
+      {typeof window !== 'undefined' && hoveredItem !== null && (
+        <>
+          {createPortal(
+            <div
+              className="h-[29cqw] aspect-video lg:block hidden preview animate-in fade-in duration-300"
+              style={{ 
+                zIndex: 99999, 
+                bottom: "-3%",
+                right: "-7%",
+                position: "fixed",
+                animation: "fadeIn 0.3s ease-out",
+                pointerEvents: "none"
+              }}
+            >
+              {data[hoveredItem].image && (
+                <Image
+                  width="750"
+                  height="500"
+                  src={data[hoveredItem].image}
+                  alt={data[hoveredItem].title}
+                  className="h-full w-full object-cover rounded-xl opacity-70"
+                />
+              )}
+
+              <div
+                className="rounded-xl absolute inset-0 before:content-[''] before:absolute before:inset-0 opacity-10"
+                style={{
+                  background: "linear-gradient(to bottom, #e2ac88, #8592bf)",
+                }}
+              />
+            </div>,
+            document.body
+          )}
+        </>
+      )}
     </>
   );
 }

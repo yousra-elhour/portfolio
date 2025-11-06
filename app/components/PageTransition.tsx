@@ -20,8 +20,8 @@ interface CloudLayer {
 // Restored all cloud layers for transitions with anti-flickering optimizations
 const cloudLayers: CloudLayer[] = [
   // Original clouds with optimized opacity values
-  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.8, speed: 0.5, zIndex: 9999 },
-  { src: "/clouds/lowCloud1.png", alt: "Foreground Low Clouds", opacity: 0.5, speed: 0.5, zIndex: 9998 },
+  { src: "/clouds/lowCloud3.png", alt: "Foreground Low Clouds", opacity: 0.8, speed: 0.9, zIndex: 100000 },
+  { src: "/clouds/lowCloud1.png", alt: "Foreground Low Clouds", opacity: 0.5, speed: 0.5, zIndex: 9997 },
   { src: "/clouds/highCloud2.png", alt: "Foreground High Clouds", opacity: 0.7, speed: 1.2, zIndex: 9997 },
   { src: "/clouds/highCloud1.png", alt: "Top Layer High Clouds", opacity: 0.9, speed: 1.5, zIndex: 9996 },
   
@@ -103,7 +103,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         if (baseIndex === 0) {
           // First cloud layer (lowCloud3.png) - animate from where entrance left off
           gsap.to(cloud, {
-            x: 20 + (offsetMultiplier * 150),
+            x: 280 + (offsetMultiplier * 150),
             y: 180 + (offsetMultiplier * 40),
             rotation: 0,
             scale: 2.5 * scaleMultiplier,

@@ -137,9 +137,130 @@ body::-webkit-scrollbar {
   }
 }
 
+/* Targeted fix for screens between 1400px and 769px (laptops, not phones) */
+@media (max-width: 1400px) and (min-width: 769px) {
+  /* Works component - smaller text and spacing with proper layout */
+  .works-title {
+    font-size: 1.15rem !important; /* Slightly bigger */
+    letter-spacing: 0.1em !important; /* Reduced letter spacing */
+    padding-left: 0.5rem !important;
+    max-width: fit-content !important; /* Prevent stretching */
+  }
+
+  .works-icon {
+    height: 1.15rem !important;
+    width: 1.15rem !important;
+  }
+
+  .works-divider {
+    margin-bottom: 1.25rem !important; /* Slightly more spacing */
+  }
+
+  /* Keep justify-between but control the container width */
+  .works-item-container {
+    justify-content: space-between !important; /* Keep arrow at end of line */
+    width: 480px !important; /* Bigger fixed width */
+    max-width: 480px !important; /* Consistent with HR width */
+  }
+
+  .works-item-container .works-title {
+    flex-shrink: 0 !important; /* Prevent title from shrinking */
+    white-space: nowrap !important; /* Keep titles on one line */
+  }
+
+  /* Control each works item but allow wider HR lines */
+  .works-item {
+    max-width: 480px !important; /* Bigger container for HR lines */
+    display: block !important;
+  }
+
+  /* Make hr lines wider like original design but not full width */
+  .works-divider {
+    width: 100% !important;
+    max-width: 480px !important; /* Bigger but controlled */
+    min-width: 250px !important; /* Ensure minimum width */
+  }
+
+  /* Hero section - smaller text and spacing */
+  .hero-title {
+    font-size: 3rem !important; /* Smaller than lg:text-7xl */
+    letter-spacing: 0.15em !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1.5rem !important;
+    letter-spacing: 0.1em !important;
+    margin-top: 1rem !important;
+  }
+
+  .hero-nav {
+    margin-top: 1.5rem !important;
+    gap: 1.5rem !important;
+    letter-spacing: 0.15em !important;
+  }
+
+  .hero-link {
+    font-size: 0.875rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* About section - slightly bigger text for better readability */
+  .about-content {
+    font-size: 1rem !important; /* Increased from 0.875rem */
+    letter-spacing: 0.12em !important;
+    line-height: 1.5 !important; /* Increased line height */
+  }
+
+  .about-paragraph {
+    margin-bottom: 1.75rem !important; /* Slightly more spacing */
+  }
+
+  /* Contact section - smaller text and spacing */
+  .contact-content {
+    font-size: 0.875rem !important;
+    letter-spacing: 0.15em !important;
+    line-height: 1.4 !important;
+  }
+
+  .contact-title {
+    font-size: 1.875rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .contact-divider {
+    margin-bottom: 1rem !important;
+  }
+
+  .contact-label,
+  .contact-text,
+  .contact-list {
+    font-size: 0.75rem !important;
+  }
+
+  .contact-icon {
+    height: 0.875rem !important;
+    width: 0.875rem !important;
+  }
+
+  /* Better positioning for smaller laptops */
+  .works {
+    left: 6% !important;
+    right: 6%;
+    top: 12% !important;
+  }
+}
+
 @media (max-width: 1155px) {
   .preview {
     height: 25cqw;
+  }
+}
+
+@media (max-width: 1024px) {
+  .preview {
+    height: 22cqw;
   }
 }
 
