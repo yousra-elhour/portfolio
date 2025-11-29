@@ -82,7 +82,7 @@ export default function About() {
 Hey, I’m Yousra.
 I’m a software engineer with a big love for nature, music, and art. Before getting into software engineering, I spent time working as a freelance illustrator, and that creative side still guides the way I build and design my projects.      </p>
       <p className="about-paragraph mb-10">
-       I’m currently in Paris doing my master’s in Software Engineering. This portfolio was a really fun project for me, I wanted it to feel like the sky I’ve always loved. I painted the clouds digitally and used them in the background, then brought everything to life with GSAP animations.
+       I’m currently in Paris doing my master’s in Software Engineering. This portfolio was a really fun project for me, I wanted it to feel more personal. I painted the clouds digitally and used them in the background, then brought everything to life with GSAP.
 
 <br />
     If you’d like to talk about tech, music, art, or just want to connect, feel free to reach out.
