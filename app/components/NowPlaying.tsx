@@ -27,7 +27,7 @@ export default function NowPlaying() {
           setTrack(data);
         }
       } catch (error) {
-        console.error('Error fetching track:', error);
+        // Error silently handled
       } finally {
         setIsLoading(false);
       }

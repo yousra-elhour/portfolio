@@ -8,6 +8,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+         '900': '900px',
+        '1200': '1200px',
+        '1400': '1400px',
+        '1600': '1600px',
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -27,9 +33,14 @@ const config: Config = {
           '0%, 100%': { height: '20%' },
           '50%': { height: '100%' },
         },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
         equalizer: 'equalizer 0.8s ease-in-out infinite',
+        fadeIn: 'fadeIn 0.6s ease-out forwards',
       },
     },
   },

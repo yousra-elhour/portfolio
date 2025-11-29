@@ -12,7 +12,6 @@ export async function getCurrentTrack(username: string): Promise<LastFmTrack | n
   const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
   
   if (!apiKey) {
-    console.error('Last.fm API key is not configured');
     return null;
   }
 
@@ -26,8 +25,6 @@ export async function getCurrentTrack(username: string): Promise<LastFmTrack | n
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Last.fm API error:', response.status, errorText);
       throw new Error(`Failed to fetch Last.fm data: ${response.status}`);
     }
 
@@ -35,14 +32,12 @@ export async function getCurrentTrack(username: string): Promise<LastFmTrack | n
     
     // Handle error response from Last.fm
     if (data.error) {
-      console.error('Last.fm API error:', data.message);
       return null;
     }
 
     const track = data.recenttracks?.track?.[0];
 
     if (!track) {
-      console.log('No track found in response');
       return null;
     }
 
@@ -61,7 +56,6 @@ export async function getCurrentTrack(username: string): Promise<LastFmTrack | n
       playedAt: track.date?.['#text'],
     };
   } catch (error) {
-    console.error('Error fetching Last.fm data:', error);
     return null;
   }
 }

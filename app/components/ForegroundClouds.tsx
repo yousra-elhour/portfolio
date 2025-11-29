@@ -162,7 +162,7 @@ export default function ForegroundClouds() {
   return (
     <div 
       ref={containerRef} 
-      className="absolute inset-0 w-full h-full pointer-events-none"
+      className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden"
     >      
       {foregroundCloudLayers.map((layer, index) => (
         <div
@@ -176,8 +176,8 @@ export default function ForegroundClouds() {
             willChange: 'transform',
             backfaceVisibility: 'hidden',
             ...layer.position,
-            width: '50%',
-            height: '50%',
+            width: '100%',
+            height: '100%',
           }}
         >
           <Image

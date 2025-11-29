@@ -25,7 +25,7 @@ export default function TopAlbums() {
           setAlbums(data);
         }
       } catch (error) {
-        console.error('Error fetching albums:', error);
+        // Error silently handled
       } finally {
         setIsLoading(false);
       }

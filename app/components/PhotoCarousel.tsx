@@ -69,11 +69,7 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
         {/* Click hint - only shows on hover if multiple photos */}
         {photos.length > 1 && (
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-              <span className="text-white text-[10px] font-bold uppercase tracking-wider">
-                Tap to flip
-              </span>
-            </div>
+            
           </div>
         )}
       </button>

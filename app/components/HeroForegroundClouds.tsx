@@ -39,22 +39,50 @@ export default function HeroForegroundClouds() {
       
       const layer = heroForegroundCloudLayers[index];
       
+      // Responsive positioning based on screen size
+      const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+      
       // Set initial positions with hardware acceleration
       gsap.set(cloud, { 
-        scale: index === 0 ? 2 : index === 1 ? 1.5 : 2,
+        scale: isMobile 
+          ? (index === 0 ? 3 : index === 1 ? 2.5 : index === 2 ? 3 : 3)
+          : isTablet
+          ? (index === 0 ? 2.5 : index === 1 ? 2 : index === 2 ? 2.5 : 2.5)
+          : (index === 0 ? 2 : index === 1 ? 1.5 : 2),
         opacity: layer.opacity,
-        x: index === 0 ? 350 : index === 1 ? 300 : index === 2 ? 200 : 100,
-        y: index === 0 ? 200 : index === 1 ? 200 : index === 2 ? 100 : -70,
+        x: isMobile
+          ? (index === 0 ? 0 : index === 1 ? -50 : index === 2 ? -100 : -150)
+          : isTablet
+          ? (index === 0 ? 200 : index === 1 ? 150 : index === 2 ? 100 : 50)
+          : (index === 0 ? 350 : index === 1 ? 300 : index === 2 ? 200 : 100),
+        y: isMobile
+          ? (index === 0 ? 100 : index === 1 ? 100 : index === 2 ? 50 : -50)
+          : isTablet
+          ? (index === 0 ? 150 : index === 1 ? 150 : index === 2 ? 80 : -50)
+          : (index === 0 ? 200 : index === 1 ? 200 : index === 2 ? 100 : -70),
         force3D: true, // Enable hardware acceleration
         transformOrigin: "center center"
       });
       
       // Create smoother animations with reduced complexity
       gsap.to(cloud, {
-        x: index === 0 ? 20 : index === 1 ? 20 : index === 2 ? -100 : -200,
-        y: index === 0 ? 180 : index === 1 ? 180 : index === 2 ? 100 : -100,
+        x: isMobile
+          ? (index === 0 ? -100 : index === 1 ? -150 : index === 2 ? -200 : -250)
+          : isTablet
+          ? (index === 0 ? 50 : index === 1 ? 0 : index === 2 ? -50 : -100)
+          : (index === 0 ? 20 : index === 1 ? 20 : index === 2 ? -100 : -200),
+        y: isMobile
+          ? (index === 0 ? 80 : index === 1 ? 80 : index === 2 ? 30 : -70)
+          : isTablet
+          ? (index === 0 ? 130 : index === 1 ? 130 : index === 2 ? 70 : -70)
+          : (index === 0 ? 180 : index === 1 ? 180 : index === 2 ? 100 : -100),
         rotation: index % 2 === 0 ? 1 : -1, // Subtle rotation
-        scale: index === 0 ? 2.5 : index === 1 ? 1.2 : index === 2 ? 2 : 2,
+        scale: isMobile
+          ? (index === 0 ? 3.5 : index === 1 ? 3 : index === 2 ? 3.5 : 3.5)
+          : isTablet
+          ? (index === 0 ? 3 : index === 1 ? 2.5 : index === 2 ? 3 : 3)
+          : (index === 0 ? 2.5 : index === 1 ? 1.2 : index === 2 ? 2 : 2),
         duration: 30 + (index * 3), // Slower, more stable animation
         ease: "none", // Linear ease to prevent stuttering
         repeat: -1,
@@ -127,7 +155,7 @@ export default function HeroForegroundClouds() {
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full z-[100] pointer-events-none">      
+    <div ref={containerRef} className="absolute inset-0 w-full h-full z-[100] pointer-events-none overflow-hidden">      
       {heroForegroundCloudLayers.map((layer, index) => (
         <div
           key={`${layer.src}-${index}`} // More stable key

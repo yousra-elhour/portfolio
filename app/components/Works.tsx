@@ -5,7 +5,7 @@ import cardiff from "../../public/images/cmu-blue-logo.gif";
 import TransitionLink from "./TransitionLink"; // Replace Link import
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MoveUpRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Email from "./Email";
 import Nav from "./Nav";
@@ -52,6 +52,8 @@ export default function Works() {
 
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Enable hover after animation completes (500ms animation + small buffer)
@@ -113,12 +115,33 @@ export default function Works() {
           </div>
         </div>
 
-        <div className={`absolute top-[15%] left-[8%] works z-50 ${!animationComplete ? 'pointer-events-none' : ''}`} ref={parent}>
+        <div 
+          className={`absolute top-[15%] left-[8%] works z-50 ${!animationComplete ? 'pointer-events-none' : ''}`} 
+          ref={parent}
+          onMouseLeave={() => {
+            // Start exit animation, then hide
+            setIsExiting(true);
+            const timeout = setTimeout(() => {
+              setHoveredItem(null);
+              setIsExiting(false);
+            }, 400); // Time for exit animation (200ms delay + 200ms fade-out)
+            hoverTimeoutRef.current = timeout;
+          }}
+        >
           {data.map((item, index) => (
             <div
               key={index}
-              onMouseEnter={() => animationComplete && setHoveredItem(index)}
-              onMouseLeave={() => setHoveredItem(null)}
+              onMouseEnter={() => {
+                if (animationComplete) {
+                  // Clear any pending hide timeout and cancel exit animation
+                  if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current);
+                    hoverTimeoutRef.current = null;
+                  }
+                  setIsExiting(false);
+                  setHoveredItem(index);
+                }
+              }}
               className="works-item cursor-pointer"
             >
               <div className="works-item-container lg:mb-5 mb-3 flex justify-between items-start gap-20">
@@ -153,17 +176,17 @@ export default function Works() {
         <>
           {createPortal(
             <div
-              className="h-[29cqw] aspect-video lg:block hidden preview animate-in fade-in duration-300"
+              className="h-[29cqw] aspect-video lg:block hidden preview transition fade-in-out rounded-xl overflow-hidden pointer-events-none"
               style={{ 
+                position: "fixed",
                 zIndex: 99999, 
                 bottom: "-3%",
                 right: "-7%",
-                position: "fixed",
-                animation: "fadeIn 0.3s ease-out",
-                pointerEvents: "none"
+               
+               
               }}
             >
-              {data[hoveredItem].image && (
+              {data[hoveredItem]?.image && (
                 <Image
                   width="750"
                   height="500"

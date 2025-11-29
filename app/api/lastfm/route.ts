@@ -20,7 +20,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error in Last.fm API route:', error);
     return NextResponse.json(
       { error: 'Failed to fetch track data' },
       { status: 500 }

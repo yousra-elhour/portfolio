@@ -35,7 +35,6 @@ export async function GET() {
     const data = await response.json();
     
     if (data.error) {
-      console.error('Last.fm API error:', data.message);
       return NextResponse.json(
         { error: data.message },
         { status: 400 }
@@ -57,7 +56,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error fetching top albums:', error);
     return NextResponse.json(
       { error: 'Failed to fetch albums' },
       { status: 500 }

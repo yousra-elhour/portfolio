@@ -46,6 +46,11 @@ const shouldShowProjectTransition = (fromPath: string, toPath: string): boolean 
   return fromPath === '/works' && toPath.startsWith('/works/');
 };
 
+// Helper function to determine if we should show project back transition (going back from project to works)
+const shouldShowProjectBackTransition = (fromPath: string, toPath: string): boolean => {
+  return fromPath.startsWith('/works/') && toPath === '/works';
+};
+
 // Helper function to determine if we should show home transition (simple transition, no clouds)
 const shouldShowHomeTransition = (fromPath: string, toPath: string): boolean => {
   return toPath === '/' && (fromPath === '/works' || fromPath === '/about' || fromPath === '/contact' || fromPath.startsWith('/works/'));
@@ -69,6 +74,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [displayedContent, setDisplayedContent] = useState<React.ReactNode>(children);
   const [showClouds, setShowClouds] = useState(false);
   const [showProjectTransition, setShowProjectTransition] = useState(false);
+  const [showProjectBackTransition, setShowProjectBackTransition] = useState(false);
   const [showHomeTransition, setShowHomeTransition] = useState(false);
   const animationTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeouts
   const animationTimelinesRef = useRef<gsap.core.Timeline[]>([]); // Track all timelines
@@ -256,24 +262,28 @@ export default function PageTransition({ children }: PageTransitionProps) {
       // Check if we should show clouds for this transition
       const shouldShow = shouldShowClouds(globalPreviousPath, pathname);
       const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
+      const shouldShowProjectBack = shouldShowProjectBackTransition(globalPreviousPath, pathname);
       const shouldShowHome = shouldShowHomeTransition(globalPreviousPath, pathname);
       
       // Use a single state update to prevent multiple re-renders
       const newTransitionState = {
         showClouds: shouldShow,
         showProjectTransition: shouldShowProject,
+        showProjectBackTransition: shouldShowProjectBack,
         showHomeTransition: shouldShowHome,
-        isTransitioning: shouldShow || shouldShowProject || shouldShowHome,
+        isTransitioning: shouldShow || shouldShowProject || shouldShowProjectBack || shouldShowHome,
         displayedContent: children
       };
       
       // Batch all state updates
       setShowClouds(newTransitionState.showClouds);
       setShowProjectTransition(newTransitionState.showProjectTransition);
+      setShowProjectBackTransition(newTransitionState.showProjectBackTransition);
       setShowHomeTransition(newTransitionState.showHomeTransition);
       setDisplayedContent(newTransitionState.displayedContent);
       
       if (newTransitionState.isTransitioning) {
+        console.log('✨ Starting transition animation');
         // Hide content immediately before starting transition
         if (contentWrapperRef.current) {
           gsap.set(contentWrapperRef.current, { opacity: 0 });
@@ -298,6 +308,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         // Batch state updates
         setShowClouds(shouldShow);
         setShowProjectTransition(shouldShowProject);
+        setShowProjectBackTransition(false);
         setShowHomeTransition(false);
         setDisplayedContent(children);
         setIsTransitioning(shouldShow || shouldShowProject);
@@ -305,6 +316,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         // For home page or normal loads, don't show transitions
         setShowClouds(false);
         setShowProjectTransition(false);
+        setShowProjectBackTransition(false);
         setShowHomeTransition(false);
         setDisplayedContent(children);
         setIsTransitioning(false);
@@ -350,9 +362,46 @@ export default function PageTransition({ children }: PageTransitionProps) {
     };
   }, [pathname]);
 
+  // Handle browser back/forward navigation and continuous state capture
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Continuously update the global state so back button always has the previous page
+    const updateGlobalState = () => {
+      if (contentWrapperRef.current && !isTransitioning) {
+        globalPreviousHTML = contentWrapperRef.current.innerHTML;
+        globalPreviousPath = pathname;
+      }
+    };
+
+    // Update immediately
+    updateGlobalState();
+
+    // Set up an interval to capture state periodically (fallback)
+    const intervalId = setInterval(updateGlobalState, 500);
+
+    // Also capture on user interactions
+    const handleInteraction = (e: Event) => {
+      updateGlobalState();
+    };
+
+    window.addEventListener('click', handleInteraction, { passive: true });
+    window.addEventListener('touchstart', handleInteraction, { passive: true });
+    window.addEventListener('scroll', handleInteraction, { passive: true });
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+    };
+  }, [pathname, isTransitioning]);
+
   useEffect(() => {
     // Handle transition animations - add guard to prevent double execution
-    if (!isTransitioning || !contentWrapperRef.current) return;
+    if (!isTransitioning || !contentWrapperRef.current) {
+      return;
+    }
     
     const contentWrapper = contentWrapperRef.current;
     
@@ -421,7 +470,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
       
       // Add fallback timeout to ensure animation completes
       const fallbackTimeout = setTimeout(() => {
-        console.warn('Cloud animation fallback triggered - ensuring content visibility');
         gsap.set(contentWrapper, { opacity: 1, y: 0 });
         setIsTransitioning(false);
       }, 3500); // 3.5 seconds fallback
@@ -443,6 +491,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         if (baseIndex === 0) {
           // Lower cloud flows down to cover screen
           entranceTl.to(cloud, {    
+            x: 20 + (offsetMultiplier * 150),
             y: 350 + (offsetMultiplier * 50),
             opacity: layer.opacity,
             duration: 1.8,
@@ -501,7 +550,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
         
         // Add fallback timeout
         const fallbackTimeout = setTimeout(() => {
-          console.warn('Project animation fallback triggered');
           gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
@@ -544,6 +592,58 @@ export default function PageTransition({ children }: PageTransitionProps) {
           force3D: true
         }, 0.2); // Slightly later start for smoother overlap
       }
+    } else if (showProjectBackTransition && containerRef.current) {
+      // Project back transition: Smooth fade effect for going back to works
+      const overlay = projectOverlayRef.current;
+      
+      if (overlay) {
+        // Ensure content is hidden initially
+        gsap.set(contentWrapper, { opacity: 0, scale: 1.05, y: -10 });
+        
+        // Add fallback timeout
+        const fallbackTimeout = setTimeout(() => {
+          gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
+          gsap.set(overlay, { opacity: 0 });
+          setIsTransitioning(false);
+        }, 1500);
+        
+        animationTimeoutsRef.current.push(fallbackTimeout);
+        
+        // Set initial states with hardware acceleration
+        gsap.set(overlay, { 
+          opacity: 1,
+          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.5) 0%, rgba(255, 255, 255, 0.7) 40%, rgba(240, 248, 255, 0.9) 100%)",
+          force3D: true
+        });
+        
+        // Create project back timeline
+        const projectBackTl = gsap.timeline({
+          onComplete: () => {
+            clearTimeout(fallbackTimeout);
+            setIsTransitioning(false);
+          }
+        });
+        animationTimelinesRef.current.push(projectBackTl);
+        
+        // Overlay fade out
+        projectBackTl.to(overlay, {
+          opacity: 0,
+          scale: 0.95,
+          duration: 0.6,
+          ease: "power1.out",
+          force3D: true
+        }, 0);
+        
+        // Content emerges with slight downward motion
+        projectBackTl.to(contentWrapper, {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.8,
+          ease: "power1.out",
+          force3D: true
+        }, 0.2);
+      }
     } else if (showHomeTransition && containerRef.current) {
       // Simple home transition: Clean fade effect without clouds
       // Ensure content is hidden initially
@@ -551,7 +651,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
       
       // Add fallback timeout
       const fallbackTimeout = setTimeout(() => {
-        console.warn('Home animation fallback triggered');
         gsap.set(contentWrapper, { opacity: 1, y: 0 });
         setIsTransitioning(false);
       }, 1200);
@@ -575,18 +674,18 @@ export default function PageTransition({ children }: PageTransitionProps) {
         ease: "power2.out"
       });
     }
-  }, [isTransitioning, showClouds, showProjectTransition, showHomeTransition]);
+  }, [isTransitioning, showClouds, showProjectTransition, showProjectBackTransition, showHomeTransition]);
 
   // Handle children prop changes separately to prevent double animations
   useEffect(() => {
-    if (!isTransitioning && !showClouds && !showProjectTransition && !showHomeTransition) {
+    if (!isTransitioning && !showClouds && !showProjectTransition && !showProjectBackTransition && !showHomeTransition) {
       setDisplayedContent(children);
       // Ensure content is visible when not transitioning
       if (contentWrapperRef.current) {
         gsap.set(contentWrapperRef.current, { opacity: 1, y: 0, scale: 1 });
       }
     }
-  }, [children, isTransitioning, showClouds, showProjectTransition, showHomeTransition]);
+  }, [children, isTransitioning, showClouds, showProjectTransition, showProjectBackTransition, showHomeTransition]);
 
   // Cleanup on unmount to prevent memory leaks and stuck animations
   useEffect(() => {
@@ -616,7 +715,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       {/* Background Cloud Animation Layer - Only show for non-home transitions */}
       {showClouds && (
         <div className="absolute inset-0 w-full h-full pointer-events-none">
-          {/* Main Background - same as HeroSection */}
+          {/* Main Background - same as HeroSection and pages */}
           <Image
             src="/clouds/bg.png"
             alt="Sky Background"
@@ -664,7 +763,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       )}
 
       {/* Project Transition Overlay - Optimized fade effect */}
-      {showProjectTransition && (
+      {(showProjectTransition || showProjectBackTransition) && (
         <div 
           ref={projectOverlayRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
@@ -684,7 +783,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
           style={{ 
             backfaceVisibility: 'hidden', // Prevent flickering
             transform: 'translateZ(0)', // Force hardware acceleration
-            opacity: (!isTransitioning && !showClouds && !showProjectTransition && !showHomeTransition) ? 1 : undefined
+            opacity: (!isTransitioning && !showClouds && !showProjectTransition && !showProjectBackTransition && !showHomeTransition) ? 1 : undefined
           }}
         >
           {displayedContent}

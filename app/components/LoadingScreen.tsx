@@ -38,7 +38,6 @@ export default function LoadingScreen({ children }: LoadingScreenProps) {
           setLoadingState(prev => ({ ...prev, ready: true }));
         }, 500);
       } catch (error) {
-        console.warn('Some resources failed to load:', error);
         // Still mark as ready even if some resources fail
         document.body.classList.remove('fonts-loading');
         document.body.classList.add('fonts-loaded');

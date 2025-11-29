@@ -8,6 +8,36 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+/* Subtle illumination effect for all links */
+a {
+  position: relative;
+  transition: text-shadow 0.3s ease, filter 0.3s ease;
+}
+
+a:hover {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4),
+               0 0 12px rgba(255, 255, 255, 0.2),
+               0 0 16px rgba(255, 255, 255, 0.1);
+  filter: brightness(1.15);
+}
+
+/* Subtle pulse animation on hover */
+@keyframes subtleGlow {
+  0%, 100% {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4),
+                 0 0 12px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.5),
+                 0 0 16px rgba(255, 255, 255, 0.3),
+                 0 0 20px rgba(255, 255, 255, 0.15);
+  }
+}
+
+a:hover {
+  animation: subtleGlow 2s ease-in-out infinite;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
@@ -18,6 +48,8 @@
 
 html {
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 body {
@@ -26,6 +58,9 @@ body {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
   /* Anti-flickering optimizations */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -121,6 +156,17 @@ img {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes slideInPreview {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -280,3 +326,80 @@ body::-webkit-scrollbar {
 .projects::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+/* Hide content initially during transitions to prevent flash */
+/* Keep page backgrounds visible immediately to prevent dark flash */
+.page-backdrop,
+.page-bg-wrapper {
+  opacity: 1 !important; /* Always visible - no animation delay */
+}
+
+/* Only animate the actual content */
+.about-content,
+.contact-content,
+.nav-menu {
+  opacity: 0;
+  animation: fadeInContent 0.6s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+/* Hero section - faster, smoother animation for home page */
+.hero-wrapper {
+  opacity: 0;
+  animation: fadeInHero 0.5s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+/* Email component already has framer-motion animation, but ensure it starts hidden */
+body > div[style*="bottom"] {
+  opacity: 0;
+  animation: fadeInContent 0.6s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInHero {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile-specific fixes to prevent PNG edges from showing */
+@media (max-width: 768px) {
+  /* Ensure all page wrappers are constrained */
+  .relative.overflow-hidden,
+  .page-bg-wrapper,
+  .relative.isolate.overflow-hidden {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure background images cover properly on mobile */
+  img[src="/clouds/bg.png"],
+  img[src*="/clouds/bg"] {
+    width: 100vw !important;
+    min-width: 100vw !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+}
+
+
