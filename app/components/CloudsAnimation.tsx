@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
+import { optimizedImageUrl } from "../utils/preload";
 
 // Register GSAP plugin (removed ScrollTrigger since we're not using scroll effects)
 if (typeof window !== "undefined") {
@@ -51,8 +52,10 @@ export default function CloudsAnimation() {
           const img = document.createElement('img');
           img.onload = () => resolve(true);
           img.onerror = () => resolve(true); // Continue even if some images fail
-          img.src = src;
-          
+          // Probe the optimized URL the rendered <Image> actually uses —
+          // probing the raw PNGs re-downloaded ~5.8MB that nothing displays.
+          img.src = optimizedImageUrl(src);
+
           // If image is already cached/loaded
           if (img.complete && img.naturalHeight > 0) {
             resolve(true);

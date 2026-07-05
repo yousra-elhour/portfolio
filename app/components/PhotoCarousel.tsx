@@ -61,6 +61,7 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
             src={photos[currentIndex].src}
             alt={photos[currentIndex].alt}
             fill
+            sizes="(max-width: 768px) 60vw, 20rem"
             className="object-cover"
             priority
           />

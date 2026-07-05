@@ -403,3 +403,33 @@ body > div[style*="bottom"] {
 }
 
 
+
+/* Floating star field: twinkle runs as a CSS opacity animation and the
+   hover glow is a class toggle — the same look as the old framer-motion
+   per-star animation, without re-rendering 50 components every 50ms. */
+.floating-star {
+  opacity: var(--star-opacity, 0.6);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  animation-name: starTwinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  transition: box-shadow 0.3s ease-out, scale 0.3s ease-out,
+    opacity 0.3s ease-out;
+}
+
+.floating-star.star-hovered {
+  animation-name: none;
+  opacity: 1;
+  scale: 3;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+              0 0 40px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: var(--star-opacity, 0.6);
+  }
+  50% {
+    opacity: calc(var(--star-opacity, 0.6) * 0.3);
+  }
+}

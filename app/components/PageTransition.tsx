@@ -32,8 +32,10 @@ const cloudLayers: CloudLayer[] = [
   { src: "/clouds/highCloud1.png", alt: "Duplicate Top Layer High Clouds", opacity: 0.7, speed: 1.5, zIndex: 9992 },
 ];
 
-// Global state to capture DOM snapshot before navigation
-let globalPreviousHTML: string = '';
+// Global state to track the previous route for transition decisions.
+// (This used to also snapshot the page via innerHTML on every click/scroll
+// and a 500ms interval — serializing the whole DOM constantly was a major
+// source of main-thread jank, and the snapshot was never read anywhere.)
 let globalPreviousPath: string = '';
 
 // Helper function to determine if clouds should be shown
@@ -283,7 +285,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
       setDisplayedContent(newTransitionState.displayedContent);
       
       if (newTransitionState.isTransitioning) {
-        console.log('✨ Starting transition animation');
         // Hide content immediately before starting transition
         if (contentWrapperRef.current) {
           gsap.set(contentWrapperRef.current, { opacity: 0 });
@@ -335,7 +336,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
     // After handling transition, update global state for next navigation
     const globalStateTimeout = setTimeout(() => {
       if (contentWrapperRef.current) {
-        globalPreviousHTML = contentWrapperRef.current.innerHTML;
         globalPreviousPath = pathname;
       }
     }, 100);
@@ -349,7 +349,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
     if (typeof window !== 'undefined') {
       window.captureCurrentPageForTransition = () => {
         if (contentWrapperRef.current) {
-          globalPreviousHTML = contentWrapperRef.current.innerHTML;
           globalPreviousPath = pathname;
         }
       };
@@ -369,7 +368,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
     // Continuously update the global state so back button always has the previous page
     const updateGlobalState = () => {
       if (contentWrapperRef.current && !isTransitioning) {
-        globalPreviousHTML = contentWrapperRef.current.innerHTML;
         globalPreviousPath = pathname;
       }
     };

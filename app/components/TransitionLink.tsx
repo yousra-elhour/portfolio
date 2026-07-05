@@ -27,15 +27,13 @@ export default function TransitionLink({
 
     e.preventDefault();
     
-    // Capture current page content BEFORE navigation
+    // Capture current page state BEFORE navigation — the capture is
+    // synchronous, so no artificial delay is needed before pushing.
     if (typeof window !== 'undefined' && window.captureCurrentPageForTransition) {
       window.captureCurrentPageForTransition();
     }
-    
-    // Small delay to ensure capture happens first
-    setTimeout(() => {
-      router.push(href);
-    }, 50);
+
+    router.push(href);
   };
 
   return (
