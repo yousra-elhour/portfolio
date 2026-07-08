@@ -100,8 +100,11 @@ const DISPLACEMENT_FRAG = /* glsl */ `
   }
 `;
 
-// display: cover-fit painting, offset by displacement + gentle turbulence,
-// with a short smear along the local flow for feathered wisps
+// display: cover-fit painting deformed by the flow. What separates a cloud
+// from a paint smudge: the drag breaks into irregular turbulent wisps
+// (noise-perturbed taps, detail appearing only where the vapor is
+// disturbed) and stretched vapor THINS as it disperses (alpha falls with
+// displacement) instead of keeping full smeared density.
 const LAYER_FRAG = /* glsl */ `
   precision highp float;
   varying vec2 vUv;
@@ -115,31 +118,64 @@ const LAYER_FRAG = /* glsl */ `
   uniform float uTurbulence;
   uniform float uTime;
 
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+      f.y
+    );
+  }
+  // two-octave turbulence vector, centered on zero
+  vec2 turb(vec2 p, float t) {
+    return vec2(
+      vnoise(p * 6.0 + vec2(t * 0.05, 0.0)) +
+        0.5 * vnoise(p * 14.0 + vec2(0.0, t * 0.08)) - 0.75,
+      vnoise(p * 6.0 + vec2(31.7, t * 0.06)) +
+        0.5 * vnoise(p * 14.0 + vec2(t * 0.07, 53.1)) - 0.75
+    );
+  }
+
   void main() {
     vec2 disp = texture2D(uDisp, vUv).xy * uStrength;
     vec2 vel = texture2D(uVel, vUv).xy;
+    float stir = length(disp);
 
     vec2 mapUv = vUv * uUvScale + uUvOffset;
 
-    // ambient vapor: two slow, layered warps — the cloud shimmers in place
+    // ambient vapor: gentle warps — the cloud shimmers in place
     vec2 amb = vec2(
       sin(mapUv.y * 21.0 + uTime * 0.21) + sin(mapUv.y * 9.0 - uTime * 0.13),
       sin(mapUv.x * 17.0 + uTime * 0.17) + sin(mapUv.x * 7.0 + uTime * 0.11)
     ) * uTurbulence;
 
-    vec2 base = mapUv - amb;
+    // wisp turbulence: fine-scale curling detail, present only where the
+    // vapor is actually disturbed — the untouched painting stays pristine
+    vec2 wisp = turb(mapUv, uTime) * stir * 1.6;
 
-    // 5-tap smear along displacement + flow: wisps feather instead of shift
+    vec2 base = mapUv - amb;
     vec2 smear = disp + vel * 0.05 * uStrength;
+
+    // taps scattered along the flow, each bent by its own turbulence so
+    // the drag feathers into ragged wisps instead of one coherent streak
     vec4 c = vec4(0.0);
-    c += texture2D(uMap, base - smear * 0.6);
-    c += texture2D(uMap, base - smear * 0.8);
-    c += texture2D(uMap, base - smear * 1.0);
-    c += texture2D(uMap, base - smear * 1.25);
-    c += texture2D(uMap, base - smear * 1.5);
+    c += texture2D(uMap, base - smear * 0.55 - wisp * 0.4);
+    c += texture2D(uMap, base - smear * 0.8 + wisp * 0.7);
+    c += texture2D(uMap, base - smear * 1.0 - wisp * 1.0);
+    c += texture2D(uMap, base - smear * 1.25 + wisp * 1.3);
+    c += texture2D(uMap, base - smear * 1.55 - wisp * 1.7);
     c *= 0.2;
 
-    gl_FragColor = vec4(c.rgb, c.a * uOpacity);
+    // stretched vapor disperses: thin the cloud where it's pulled hardest
+    float thin = clamp(stir * 9.0, 0.0, 1.0);
+    float alpha = c.a * uOpacity * (1.0 - thin * 0.5);
+
+    gl_FragColor = vec4(c.rgb, alpha);
   }
 `;
 
