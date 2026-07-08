@@ -19,10 +19,15 @@ export const preloadCriticalImages = () => {
   if (typeof window === 'undefined') return Promise.resolve();
 
   const criticalImages = [
-    // Only preload the cloud animation images, not the background
+    // Page ambience clouds
     '/clouds/lowCloud1.png',
     '/clouds/lowCloud2.png',
     '/clouds/highCloud1.png',
+    // PageTransition entrance layers — lowCloud3/highCloud2 were missing
+    // from this list, so the home -> about/contact transition fetched and
+    // decoded them mid-animation (the pop/flash on first navigation).
+    '/clouds/lowCloud3.png',
+    '/clouds/highCloud2.png',
     // Also preload the main background to prevent flash
     '/clouds/bg.png',
   ];

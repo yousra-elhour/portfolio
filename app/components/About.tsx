@@ -8,6 +8,8 @@ import NowPlaying from "./NowPlaying";
 import TopAlbums from "./TopAlbums";
 import PhotoCarousel from "./PhotoCarousel";
 import ForegroundClouds from "./ForegroundClouds";
+import carouselPhoto2 from "../../public/images/carousel/2.jpeg";
+import carouselPhoto3 from "../../public/images/carousel/3.jpeg";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -120,9 +122,8 @@ I’m a software engineer with a big love for nature, music, and art. Before get
           <div className="mb-4">
             <PhotoCarousel
               photos={[
-             
-                { src: "/images/carousel/2.jpeg", alt: "Profile photo 2" },
-                { src: "/images/carousel/3.jpeg", alt: "Profile photo 3" },
+                { src: carouselPhoto2, alt: "Profile photo 2" },
+                { src: carouselPhoto3, alt: "Profile photo 3" },
               ]}
             />
           </div>

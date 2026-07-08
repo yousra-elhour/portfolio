@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import HeroForegroundClouds from "./HeroForegroundClouds";
 import CloudsAnimation from "./CloudsAnimation";
+import CloudsGL from "./CloudsGL";
 import TransitionLink from "./TransitionLink";
 import FloatingStars from "./FloatingStars";
 
@@ -56,7 +57,7 @@ export default function HeroSection() {
       <div
         className={`relative isolate overflow-hidden font-lead `}
       >
-          <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md">
+          <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none">
         {""}
       </div>
         <Image
@@ -72,6 +73,13 @@ export default function HeroSection() {
 
         {/* Background Clouds Animation */}
         <CloudsAnimation />
+
+        {/* Interactive cloud field (three.js) — parts and swirls around the
+            cursor, slowly reforms. Sits above the backdrop veil, below the
+            hero text. */}
+        <div className="absolute inset-0 z-30 pointer-events-none">
+          <CloudsGL />
+        </div>
 
         {/* Floating Interactive Stars */}
         <FloatingStars />

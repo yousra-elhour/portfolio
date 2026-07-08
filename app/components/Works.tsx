@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import cardiff from "../../public/images/cmu-blue-logo.gif";
+import vinylBanner from "../../public/images/vinyl-banner.png";
+import natureBanner from "../../public/images/nature-banner.png";
+import admissionBanner from "../../public/images/admissionPedia/banner.jpg";
+import illustrationsBanner from "../../public/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg";
 import TransitionLink from "./TransitionLink"; // Replace Link import
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MoveUpRight } from "lucide-react";
@@ -17,35 +21,35 @@ export default function Works() {
   const data = [
     {
       title: "Vinyl E-commerce & CMS",
-      image: "/images/vinyl-banner.png",
+      image: vinylBanner,
       link: "/works/vinyl",
       live: "https://vinyl-client-omega.vercel.app",
     },
 
     {
       title: "Nature Housing",
-      image: "/images/nature-banner.png",
+      image: natureBanner,
       link: "/works/nature-housing",
       live: "https://nature-housing.netlify.app",
     },
 
     {
       title: "AdmissionPedia",
-      image: "/images/admissionPedia/banner.jpg",
+      image: admissionBanner,
       link: "/works/admissionPedia",
       live: "https://admissionpedia.dev",
     },
 
     {
       title: "Digital Illustrations",
-      image: "/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg",
+      image: illustrationsBanner,
       link: "/works/illustrations",
       live: "https://www.artstation.com/cirrusyk",
     },
 
     {
       title: "University Projects",
-      image: "/images/cmu-blue-logo.gif",
+      image: cardiff,
       link: "/works/university-projects",
     },
   ];
@@ -192,6 +196,12 @@ export default function Works() {
                   height="500"
                   src={data[hoveredItem].image}
                   alt={data[hoveredItem].title}
+                  placeholder={
+                    typeof data[hoveredItem].image === "object" &&
+                    data[hoveredItem].image.blurDataURL
+                      ? "blur"
+                      : "empty"
+                  }
                   className="h-full w-full object-cover rounded-xl opacity-70"
                 />
               )}

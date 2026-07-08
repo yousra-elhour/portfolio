@@ -1,15 +1,23 @@
 "use client";
 
-import Image from "next/image";
-import image from "../../public/images/aaaaUntitled-1 1.jpg";
+import Image, { StaticImageData } from "next/image";
 
 import Nav from "./Nav";
 import Link from "next/link";
 
+// Statically imported images carry an automatic blurDataURL, giving the
+// Next.js blur-up placeholder instead of an empty box while they load.
+type ProjectImage = string | StaticImageData;
+
+const blurProps = (src: ProjectImage) =>
+  typeof src === "object" && src.blurDataURL
+    ? { placeholder: "blur" as const }
+    : {};
+
 interface ProjectProps {
-  images?: string[];
-  additionalImages?: string[];
-  banner: string;
+  images?: ProjectImage[];
+  additionalImages?: ProjectImage[];
+  banner: ProjectImage;
   title: string;
   techStack: string;
   description: string;
@@ -19,7 +27,7 @@ interface ProjectProps {
   live?: string;
   design?: string;
   imagesTitle?: {
-    img: string;
+    img: ProjectImage;
     live?: string;
     title?: string;
     techStack?: string;
@@ -112,6 +120,7 @@ export default function Project({
                 priority={true}
                 src={banner}
                 alt="preview"
+                {...blurProps(banner)}
                 className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
               />
               <div className="w-full ">
@@ -157,10 +166,11 @@ export default function Project({
                 <Image
                   width={800}
                   height={800}
-                  priority={true}
+                  loading="lazy"
                   key={index}
                   src={image}
                   alt={`preview-${index}`}
+                  {...blurProps(image)}
                   className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
                 />
               ))}
@@ -215,8 +225,9 @@ export default function Project({
                     height={800}
                     key={index}
                     src={item.img}
-                    priority={true}
+                    loading="lazy"
                     alt={`preview-${index}`}
+                    {...blurProps(item.img)}
                     className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
                   />
                 </>
@@ -244,10 +255,11 @@ export default function Project({
                   <Image
                     width={800}
                     height={800}
-                    priority={true}
+                    loading="lazy"
                     key={index}
                     src={image}
                     alt={`preview-${index}`}
+                    {...blurProps(image)}
                     className=" mt-10 object-cover rounded-3xl "
                   />
                 ))}

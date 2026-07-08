@@ -2,11 +2,16 @@
 
 import Project from "../../components/Project";
 import Previous from "@/app/components/Previous";
+import cardiff from "../../../public/images/cmu-blue-logo.gif";
+import upShoe from "../../../public/images/universityProjects/shoeproject.png";
+import upSist from "../../../public/images/universityProjects/sist-connect.png";
+import upTictactoe from "../../../public/images/universityProjects/tictactoe.jpg";
+import upHr from "../../../public/images/universityProjects/hr-manager.png";
 
 export default function WorksPage() {
   const projects = [
     {
-      img: "/images/universityProjects/shoeproject.png",
+      img: upShoe,
       techStack: "Java, SpringBoot, ThymeLeaf, Bootstrap",
       title: "Fast Shoe Store WebApp",
       code: "https://github.com/cirrusyk/e-shop-project",
@@ -15,7 +20,7 @@ export default function WorksPage() {
     },
 
     {
-      img: "/images/universityProjects/sist-connect.png",
+      img: upSist,
       techStack: "Flutter, Firebase",
       title: "Sist Connect - Social Media For University",
       code: "https://github.com/cirrusyk/SistConnect",
@@ -23,14 +28,14 @@ export default function WorksPage() {
         "https://www.behance.net/gallery/147408235/University-social-media-app-concept",
     },
     {
-      img: "/images/universityProjects/tictactoe.jpg",
+      img: upTictactoe,
       techStack: "Python, Pygame, Agile, UML Diagrams, ",
       title: "Tic Tic Tac using AI algorithms ",
       code: "https://github.com/yousra-elhour/tic-tac-toe/tree/master",
     },
 
     {
-      img: "/images/universityProjects/hr-manager.png",
+      img: upHr,
       techStack: "Flutter, Firebase ",
       title: "Human Resources App ",
       code: "https://github.com/cirrusyk/HumanResourceApp/tree/master",
@@ -39,7 +44,7 @@ export default function WorksPage() {
   return (
     <>
       <Project
-        banner={"/images/cmu-blue-logo.gif"}
+        banner={cardiff}
         title={"University Projects"}
         techStack={
           "Web & App Development, Object Oriented Programming, Software Design"

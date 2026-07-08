@@ -2,21 +2,32 @@
 import Project from "../../components/Project";
 
 import Previous from "@/app/components/Previous";
+import apBanner from "../../../public/images/admissionPedia/banner.jpg";
+import apMain from "../../../public/images/admissionPedia/main.png";
+import apSearch from "../../../public/images/admissionPedia/Search.png";
+import apAddSchool from "../../../public/images/admissionPedia/Addschool.png";
+import apUserDashboard from "../../../public/images/admissionPedia/User dashboard.png";
+import apSignUp from "../../../public/images/admissionPedia/Sign up.png";
+import apSchoolPage from "../../../public/images/admissionPedia/School page.png";
+import apAddSchoolForm from "../../../public/images/admissionPedia/add-school.png";
+import apBusiness from "../../../public/images/admissionPedia/business.png";
+import apEmail from "../../../public/images/admissionPedia/email.png";
+import apBrochure from "../../../public/images/admissionPedia/brochure-1.png";
 
 export default function WorksPage() {
   return (
     <>
       <Project
         images={[
-          "/images/admissionPedia/main.png",
-          "/images/admissionPedia/Search.png",
-          "/images/admissionPedia/Addschool.png",
-          "/images/admissionPedia/User dashboard.png",
-          "/images/admissionPedia/Sign up.png",
-          "/images/admissionPedia/School page.png",
-          "/images/admissionPedia/add-school.png",
+          apMain,
+          apSearch,
+          apAddSchool,
+          apUserDashboard,
+          apSignUp,
+          apSchoolPage,
+          apAddSchoolForm,
         ]}
-        banner={"/images/admissionPedia/banner.jpg"}
+        banner={apBanner}
         live="https://admissionpedia.dev/"
         design="https://www.behance.net/gallery/183533805/AdmissionPedia-Design"
         title={"AdmissionPedia"}
@@ -28,12 +39,7 @@ export default function WorksPage() {
         `}
         additionalTitle="Branding"
         additionalDescription="Branding Graphics that I did for the company"
-        additionalImages={[
-          "/images/admissionPedia/banner.jpg",
-          "/images/admissionPedia/business.png",
-          "/images/admissionPedia/email.png",
-          "/images/admissionPedia/brochure-1.png",
-        ]}
+        additionalImages={[apBanner, apBusiness, apEmail, apBrochure]}
       />
       <Previous />
     </>

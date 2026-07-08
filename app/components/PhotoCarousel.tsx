@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 interface Photo {
-  src: string;
+  src: string | StaticImageData;
   alt: string;
   caption?: string;
 }
@@ -62,6 +62,12 @@ export default function PhotoCarousel({ photos }: PhotoCarouselProps) {
             alt={photos[currentIndex].alt}
             fill
             sizes="(max-width: 768px) 60vw, 20rem"
+            placeholder={
+              typeof photos[currentIndex].src === "object" &&
+              (photos[currentIndex].src as StaticImageData).blurDataURL
+                ? "blur"
+                : "empty"
+            }
             className="object-cover"
             priority
           />

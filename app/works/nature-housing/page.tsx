@@ -2,18 +2,18 @@
 
 import Project from "../../components/Project";
 import Previous from "@/app/components/Previous";
+import natureBanner from "../../../public/images/nature-banner.png";
+import natureMain from "../../../public/images/nature-housing/main.png";
+import natureHomepage from "../../../public/images/nature-housing/homepage.png";
+import natureHouse from "../../../public/images/nature-housing/house.png";
+import natureAdmin from "../../../public/images/nature-housing/admin.png";
 
 export default function WorksPage() {
   return (
     <>
       <Project
-        images={[
-          "/images/nature-housing/main.png",
-          "/images/nature-housing/homepage.png",
-          "/images/nature-housing/house.png",
-          "/images/nature-housing/admin.png",
-        ]}
-        banner={"/images/nature-banner.png"}
+        images={[natureMain, natureHomepage, natureHouse, natureAdmin]}
+        banner={natureBanner}
         live="https://nature-housing.netlify.app/"
         title={"Nature Housing"}
         techStack={"Next.js 13, Tailwind,  Prisma, MongoDB"}

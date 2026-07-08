@@ -1,21 +1,29 @@
 "use client";
 import Project from "../../components/Project";
 import Previous from "@/app/components/Previous";
+import illusBanner from "../../../public/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg";
+import illusBlackHole from "../../../public/images/illustrations/cirrus-yk-black-hole-low.jpg";
+import illusStudie from "../../../public/images/illustrations/cirrus-yk-studie2-low-nb.jpg";
+import illusRender from "../../../public/images/illustrations/cirrus-yk-render-targafter7-recogvered.jpg";
+import illusUntitled13 from "../../../public/images/illustrations/cirrus-yk-untitled-13.jpg";
+import illusUntitled14 from "../../../public/images/illustrations/cirrus-yk-untitled-14-1.jpg";
+import illusUntitled16 from "../../../public/images/illustrations/cirrus-yk-untitled-16.jpg";
+import illusUntitled29 from "../../../public/images/illustrations/cirrus-yk-untitled-29-1.jpg";
 
 export default function WorksPage() {
   return (
     <>
       <Project
         images={[
-          "/images/illustrations/cirrus-yk-black-hole-low.jpg",
-          "/images/illustrations/cirrus-yk-studie2-low-nb.jpg",
-          "/images/illustrations/cirrus-yk-render-targafter7-recogvered.jpg",
-          "/images/illustrations/cirrus-yk-untitled-13.jpg",
-          "/images/illustrations/cirrus-yk-untitled-14-1.jpg",
-          "/images/illustrations/cirrus-yk-untitled-16.jpg",
-          "/images/illustrations/cirrus-yk-untitled-29-1.jpg",
+          illusBlackHole,
+          illusStudie,
+          illusRender,
+          illusUntitled13,
+          illusUntitled14,
+          illusUntitled16,
+          illusUntitled29,
         ]}
-        banner={"/images/illustrations/cirrus-yk-cyberpunk-final-fullres.jpg"}
+        banner={illusBanner}
         title={"Digital Illustrations"}
         live="https://www.artstation.com/cirrusyk"
         techStack={"Photoshop, Blender, Illustrator"}
