@@ -22,11 +22,11 @@ import { useEffect, useRef } from "react";
 
 const SIM_WIDTH = 192; // fluid grid width; height follows the host aspect
 const VELOCITY_DISSIPATION = 0.96; // per-second-ish decay of stirred motion
-const DISPLACEMENT_HEAL = 0.4; // fraction healed per second — cloud reforms
-const DISPLACEMENT_GAIN = 0.55; // how strongly flow drags the texture
+const DISPLACEMENT_HEAL = 0.32; // fraction healed per second — cloud reforms
+const DISPLACEMENT_GAIN = 0.75; // how strongly flow drags the texture
 const SPLAT_RADIUS = 0.11; // stroke brush size, fraction of view height
-const SPLAT_FORCE = 0.55; // stroke strength (kept subtle)
-const MAX_DISPLACEMENT = 0.16; // clamp so wisps never tear the painting apart
+const SPLAT_FORCE = 0.9; // stroke strength (kept subtle)
+const MAX_DISPLACEMENT = 0.22; // clamp so wisps never tear the painting apart
 
 interface LayerConfig {
   src: string;
@@ -35,14 +35,47 @@ interface LayerConfig {
   strength: number;
   /** ambient turbulence amplitude (UV units) */
   turbulence: number;
-  /** shifts the painting down the screen (UV fraction) */
-  yShift: number;
+  /** GSAP-equivalent wind drift (px/scale, per breakpoint: [mobile, tablet, desktop]) */
+  from: { scale: number[]; x: number[]; y: number[] };
+  to: { scale: number[]; x: number[]; y: number[] };
+  duration: number;
+  /** mouse parallax strength in px, like the old DOM layers */
+  parallax: [number, number];
 }
 
+// These are the site's existing foreground cloud layers — same textures,
+// same opacities, and the same slow wind choreography the GSAP version
+// used (HeroForegroundClouds). The GL version replaces those DOM layers
+// one-for-one and adds the fluid deformation on top of the drift.
 const LAYERS: LayerConfig[] = [
-  { src: "/clouds/lowCloud1.png", opacity: 0.5, strength: 0.7, turbulence: 0.002, yShift: 0.16 },
-  { src: "/clouds/lowCloud3.png", opacity: 0.75, strength: 1.0, turbulence: 0.003, yShift: 0.08 },
+  {
+    src: "/clouds/lowCloud3.png", opacity: 0.7, strength: 1.0, turbulence: 0.003,
+    from: { scale: [3, 2.5, 2], x: [0, 200, 350], y: [100, 150, 200] },
+    to: { scale: [3.5, 3, 2.5], x: [-100, 50, 20], y: [80, 130, 180] },
+    duration: 30, parallax: [10, 5],
+  },
+  {
+    src: "/clouds/lowCloud1.png", opacity: 0.4, strength: 0.85, turbulence: 0.002,
+    from: { scale: [2.5, 2, 1.5], x: [-50, 150, 300], y: [100, 150, 200] },
+    to: { scale: [3, 2.5, 1.2], x: [-150, 0, 20], y: [80, 130, 180] },
+    duration: 33, parallax: [10, 5],
+  },
+  {
+    src: "/clouds/highCloud2.png", opacity: 0.6, strength: 0.7, turbulence: 0.002,
+    from: { scale: [3, 2.5, 2], x: [-100, 100, 200], y: [50, 80, 100] },
+    to: { scale: [3.5, 3, 2], x: [-200, -50, -100], y: [30, 70, 100] },
+    duration: 36, parallax: [15, 8],
+  },
+  {
+    src: "/clouds/highCloud1.png", opacity: 0.8, strength: 0.6, turbulence: 0.0015,
+    from: { scale: [3, 2.5, 2], x: [-150, 50, 100], y: [-50, -50, -70] },
+    to: { scale: [3.5, 3, 2], x: [-250, -100, -200], y: [-70, -70, -100] },
+    duration: 39, parallax: [15, 8],
+  },
 ];
+
+const breakpointIndex = (width: number) =>
+  width < 768 ? 0 : width < 1024 ? 1 : 2;
 
 const QUAD_VERT = /* glsl */ `
   varying vec2 vUv;
@@ -113,6 +146,8 @@ const LAYER_FRAG = /* glsl */ `
   uniform sampler2D uVel;
   uniform vec2 uUvScale;
   uniform vec2 uUvOffset;
+  uniform vec2 uTranslate; // wind drift + parallax, in screen-UV units
+  uniform float uZoom;     // wind drift scale, about the viewport center
   uniform float uOpacity;
   uniform float uStrength;
   uniform float uTurbulence;
@@ -146,7 +181,8 @@ const LAYER_FRAG = /* glsl */ `
     vec2 vel = texture2D(uVel, vUv).xy;
     float stir = length(disp);
 
-    vec2 mapUv = vUv * uUvScale + uUvOffset;
+    vec2 suv = (vUv - 0.5) / uZoom + 0.5 + uTranslate;
+    vec2 mapUv = suv * uUvScale + uUvOffset;
 
     // ambient vapor: gentle warps — the cloud shimmers in place
     vec2 amb = vec2(
@@ -321,6 +357,8 @@ export default function CloudsGL() {
             uVel: { value: null },
             uUvScale: { value: new THREE.Vector2(1, 1) },
             uUvOffset: { value: new THREE.Vector2(0, 0) },
+            uTranslate: { value: new THREE.Vector2(0, 0) },
+            uZoom: { value: 1 },
             uOpacity: { value: cfg.opacity },
             uStrength: { value: cfg.strength },
             uTurbulence: { value: cfg.turbulence },
@@ -349,12 +387,12 @@ export default function CloudsGL() {
             scale.x = 1;
             scale.y = imgAspect / hostAspect;
             offset.x = 0;
-            offset.y = (1 - scale.y) / 2 + LAYERS[i].yShift;
+            offset.y = (1 - scale.y) / 2;
           } else {
             scale.x = hostAspect / imgAspect;
             scale.y = 1;
             offset.x = (1 - scale.x) / 2;
-            offset.y = LAYERS[i].yShift;
+            offset.y = 0;
           }
         });
       };
@@ -391,9 +429,23 @@ export default function CloudsGL() {
       let rafId = 0;
       let running = false;
 
+      // smoothed pointer for the parallax (matches the old GSAP easing feel)
+      const parallax = { x: 0, y: 0 };
+
       const frame = () => {
         const dt = Math.min(clock.getDelta(), 0.05);
         const t = clock.elapsedTime;
+
+        const hostW = Math.max(host.clientWidth, 1);
+        const hostH = Math.max(host.clientHeight, 1);
+        const bp = breakpointIndex(hostW);
+
+        // ease the parallax toward the pointer (normalized -1..1 from center)
+        const targetPx = mouse.has ? mouse.x * 2 - 1 : 0;
+        const targetPy = mouse.has ? mouse.y * 2 - 1 : 0;
+        const k = 1 - Math.exp(-2.5 * dt);
+        parallax.x += (targetPx - parallax.x) * k;
+        parallax.y += (targetPy - parallax.y) * k;
 
         // stroke velocity in uv/s, clamped so fast flicks stay graceful
         const mv = velMaterial.uniforms.uMouseVel.value as {
@@ -436,8 +488,30 @@ export default function CloudsGL() {
         renderer.render(simScene, simCamera);
         [dispA, dispB] = [dispB, dispA];
 
-        // display
-        layerMaterials.forEach((material) => {
+        // display: wind drift (GSAP-equivalent yoyo between from/to),
+        // parallax, and the fluid fields
+        layerMaterials.forEach((material, i) => {
+          const cfg = LAYERS[i];
+
+          // sine-eased yoyo phase, like gsap yoyo with sine.inOut
+          const cycle = (t / cfg.duration) % 2;
+          const lin = cycle < 1 ? cycle : 2 - cycle;
+          const e = 0.5 - 0.5 * Math.cos(Math.PI * lin);
+
+          const scale = cfg.from.scale[bp] + (cfg.to.scale[bp] - cfg.from.scale[bp]) * e;
+          const xPx =
+            cfg.from.x[bp] + (cfg.to.x[bp] - cfg.from.x[bp]) * e +
+            parallax.x * cfg.parallax[0];
+          const yPx =
+            cfg.from.y[bp] + (cfg.to.y[bp] - cfg.from.y[bp]) * e -
+            parallax.y * cfg.parallax[1];
+
+          // image translated right/down by (xPx, yPx) means sampling shifts
+          // the opposite way (screen uv is y-up, DOM px are y-down)
+          (material.uniforms.uTranslate.value as { set: (x: number, y: number) => void })
+            .set(-xPx / hostW, yPx / hostH);
+          material.uniforms.uZoom.value = scale;
+
           material.uniforms.uDisp.value = dispA.texture;
           material.uniforms.uVel.value = velA.texture;
           material.uniforms.uTime.value = t;

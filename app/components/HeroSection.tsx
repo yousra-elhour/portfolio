@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import HeroForegroundClouds from "./HeroForegroundClouds";
 import CloudsAnimation from "./CloudsAnimation";
 import CloudsGL from "./CloudsGL";
 import TransitionLink from "./TransitionLink";
@@ -74,13 +73,6 @@ export default function HeroSection() {
         {/* Background Clouds Animation */}
         <CloudsAnimation />
 
-        {/* Interactive cloud field (three.js) — parts and swirls around the
-            cursor, slowly reforms. Sits above the backdrop veil, below the
-            hero text. */}
-        <div className="absolute inset-0 z-30 pointer-events-none">
-          <CloudsGL />
-        </div>
-
         {/* Floating Interactive Stars */}
         <FloatingStars />
 
@@ -143,8 +135,12 @@ export default function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Foreground Clouds (rendered OUTSIDE the -z-20 container) */}
-        <HeroForegroundClouds />
+        {/* Foreground clouds — the same four layers and wind drift the GSAP
+            version rendered, now drawn in WebGL so the fluid touch effect
+            deforms the actual clouds instead of extra copies on top. */}
+        <div className="absolute inset-0 z-[100] pointer-events-none">
+          <CloudsGL />
+        </div>
 
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
