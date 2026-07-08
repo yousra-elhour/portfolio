@@ -62,13 +62,13 @@ const LAYERS: LayerConfig[] = [
     duration: 33, parallax: [10, 5],
   },
   {
-    src: "/clouds/highCloud2.png", opacity: 0.6, strength: 0.7, turbulence: 0.002,
+    src: "/clouds/highCloud2.png", opacity: 0.6, strength: 0.35, turbulence: 0.002,
     from: { scale: [3, 2.5, 2], x: [-100, 100, 200], y: [50, 80, 100] },
     to: { scale: [3.5, 3, 2], x: [-200, -50, -100], y: [30, 70, 100] },
     duration: 36, parallax: [15, 8],
   },
   {
-    src: "/clouds/highCloud1.png", opacity: 0.8, strength: 0.6, turbulence: 0.0015,
+    src: "/clouds/highCloud1.png", opacity: 0.8, strength: 0.4, turbulence: 0.0015,
     from: { scale: [3, 2.5, 2], x: [-150, 50, 100], y: [-50, -50, -70] },
     to: { scale: [3.5, 3, 2], x: [-250, -100, -200], y: [-70, -70, -100] },
     duration: 39, parallax: [15, 8],
@@ -193,26 +193,33 @@ const LAYER_FRAG = /* glsl */ `
 
     // wisp turbulence: fine-scale curling detail, present only where the
     // vapor is actually disturbed — the untouched painting stays pristine
-    vec2 wisp = turb(mapUv, uTime) * stir * 1.6;
+    vec2 wisp = turb(mapUv, uTime) * stir * 0.9;
 
     vec2 base = mapUv - amb;
     vec2 smear = disp + vel * 0.05 * uStrength;
 
     // taps scattered along the flow, each bent by its own turbulence so
-    // the drag feathers into ragged wisps instead of one coherent streak
-    vec4 c = vec4(0.0);
-    c += texture2D(uMap, base - smear * 0.55 - wisp * 0.4);
-    c += texture2D(uMap, base - smear * 0.8 + wisp * 0.7);
-    c += texture2D(uMap, base - smear * 1.0 - wisp * 1.0);
-    c += texture2D(uMap, base - smear * 1.25 + wisp * 1.3);
-    c += texture2D(uMap, base - smear * 1.55 - wisp * 1.7);
-    c *= 0.2;
+    // the drag feathers into ragged wisps instead of one coherent streak.
+    // rgb is alpha-weighted: taps landing on transparent paint must not
+    // drag the hidden matte color in (that read as weird dirty hues).
+    vec4 acc = vec4(0.0);
+    vec4 s0 = texture2D(uMap, base - smear * 0.7 - wisp * 0.25);
+    vec4 s1 = texture2D(uMap, base - smear * 0.85 + wisp * 0.45);
+    vec4 s2 = texture2D(uMap, base - smear * 1.0 - wisp * 0.6);
+    vec4 s3 = texture2D(uMap, base - smear * 1.15 + wisp * 0.8);
+    vec4 s4 = texture2D(uMap, base - smear * 1.3 - wisp * 1.0);
+    acc.rgb += s0.rgb * s0.a; acc.a += s0.a;
+    acc.rgb += s1.rgb * s1.a; acc.a += s1.a;
+    acc.rgb += s2.rgb * s2.a; acc.a += s2.a;
+    acc.rgb += s3.rgb * s3.a; acc.a += s3.a;
+    acc.rgb += s4.rgb * s4.a; acc.a += s4.a;
+    vec3 rgb = acc.a > 1e-4 ? acc.rgb / acc.a : vec3(0.0);
 
     // stretched vapor disperses: thin the cloud where it's pulled hardest
     float thin = clamp(stir * 9.0, 0.0, 1.0);
-    float alpha = c.a * uOpacity * (1.0 - thin * 0.5);
+    float alpha = (acc.a * 0.2) * uOpacity * (1.0 - thin * 0.5);
 
-    gl_FragColor = vec4(c.rgb, alpha);
+    gl_FragColor = vec4(rgb, alpha);
   }
 `;
 
