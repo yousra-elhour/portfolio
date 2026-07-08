@@ -61,28 +61,28 @@ const BANDS: BandConfig[] = [
   {
     z: -4, count: 12, countCoarse: 6, opacity: 0.32,
     scaleMin: 3.4, scaleMax: 5.8, yMin: -1.15, yMax: 0.35,
-    force: 0.45, wind: 0.05, bob: 0.12,
+    force: 0.7, wind: 0.1, bob: 0.16,
   },
   // mid band
   {
     z: 0, count: 10, countCoarse: 5, opacity: 0.42,
     scaleMin: 2.4, scaleMax: 4.2, yMin: -1.1, yMax: 0.0,
-    force: 0.8, wind: 0.09, bob: 0.09,
+    force: 1.3, wind: 0.18, bob: 0.12,
   },
   // near band — fastest wind and strongest reaction
   {
     z: 3, count: 8, countCoarse: 4, opacity: 0.52,
     scaleMin: 1.7, scaleMax: 3.0, yMin: -1.15, yMax: -0.35,
-    force: 1.25, wind: 0.14, bob: 0.06,
+    force: 2.0, wind: 0.28, bob: 0.08,
   },
 ];
 
 const CAMERA_Z = 8;
-const SPRING_K = 2.4;
+const SPRING_K = 2.0;
 const DAMPING = 1.6;
-const REPEL = 5.2;
+const REPEL = 9;
 const SWIRL = 0.55;
-const BILLOW = 0.035; // ±3.5% slow scale breathing
+const BILLOW = 0.05; // ±5% slow scale breathing
 
 const optimizedUrl = (src: string) =>
   `/_next/image?url=${encodeURIComponent(src)}&w=1920&q=75`;
@@ -337,7 +337,7 @@ export default function CloudsGL() {
             mx = mouseNDC.x * group.halfW;
             my = mouseNDC.y * group.halfH;
           }
-          const radius = group.halfH * 0.55;
+          const radius = group.halfH * 0.75;
 
           for (let i = 0; i < group.count; i++) {
             // directional wind: homes migrate and wrap past the view edge,

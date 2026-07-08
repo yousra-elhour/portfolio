@@ -9,14 +9,12 @@ interface Star {
   y: number;
   size: number;
   opacity: number;
-  speed: number; // upward drift in px per 50ms, same scale as before
   twinkleSpeed: number;
 }
 
-// Same star field as before (counts, sizes, twinkle, drift, hover glow),
-// but without re-rendering every star through React 20 times a second:
-// twinkle runs as a CSS animation, and one rAF loop applies the upward
-// drift and the 100px mouse-proximity glow directly to the DOM nodes.
+// Static starfield: stars twinkle in place (CSS animation) in the open sky
+// above the cloud banks — they don't drift, so they never read as specks
+// moving across the clouds. Hovering near a star still makes it glow.
 export default function FloatingStars() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stars, setStars] = useState<Star[]>([]);
@@ -31,10 +29,10 @@ export default function FloatingStars() {
         newStars.push({
           id: i,
           x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
+          // upper ~half of the viewport: open sky, above the cloud field
+          y: Math.random() * window.innerHeight * 0.52,
           size: Math.random() * 3 + 1,
           opacity: Math.random() * 0.8 + 0.2,
-          speed: Math.random() * 0.5 + 0.1,
           twinkleSpeed: Math.random() * 2 + 1,
         });
       }
@@ -48,56 +46,45 @@ export default function FloatingStars() {
     return () => window.removeEventListener("resize", generateStars);
   }, []);
 
-  // Drift + hover proximity: one rAF loop, no React state per frame.
+  // Hover glow: rAF-throttled proximity check on mousemove — positions are
+  // static, so there's no per-frame work while the mouse is still.
   useEffect(() => {
     if (!stars.length || !containerRef.current) return;
 
     const els = Array.from(
       containerRef.current.querySelectorAll<HTMLElement>(".floating-star")
     );
-    const offsets = new Float32Array(els.length);
     const hovered = new Array<boolean>(els.length).fill(false);
+    let rafId = 0;
+    let pending = false;
     let mouseX = -1e4;
     let mouseY = -1e4;
-    let last = performance.now();
-    let rafId = 0;
 
-    const onMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    };
-
-    const tick = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 0.1);
-      last = now;
-      const h = window.innerHeight;
-
+    const applyHover = () => {
+      pending = false;
       els.forEach((el, i) => {
         const star = stars[i];
         if (!star) return;
-
-        // original: y -= speed every 50ms => speed * 20 px per second
-        let offset = offsets[i] - star.speed * 20 * dt;
-        const y = star.y + offset;
-        // wrap: once above the viewport, re-enter from below (as before)
-        if (y <= -10) offset = h + 10 - star.y;
-        offsets[i] = offset;
-        el.style.transform = `translate3d(0, ${offset}px, 0)`;
-
         const dx = star.x - mouseX;
-        const dy = star.y + offset - mouseY;
+        const dy = star.y - mouseY;
         const isNear = dx * dx + dy * dy < 100 * 100;
         if (isNear !== hovered[i]) {
           hovered[i] = isNear;
           el.classList.toggle("star-hovered", isNear);
         }
       });
+    };
 
-      rafId = requestAnimationFrame(tick);
+    const onMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (!pending) {
+        pending = true;
+        rafId = requestAnimationFrame(applyHover);
+      }
     };
 
     window.addEventListener("mousemove", onMouseMove, { passive: true });
-    rafId = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
@@ -108,7 +95,7 @@ export default function FloatingStars() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 pointer-events-none"
+      className="fixed inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 20 }}
     >
       {stars.map((star) => (
@@ -146,7 +133,6 @@ function ShootingStars() {
         ...prev,
         {
           id,
-          // position chosen at spawn time (was re-randomized every render)
           left: Math.random() * window.innerWidth,
           drift: Math.random() * 200 - 100,
         },
