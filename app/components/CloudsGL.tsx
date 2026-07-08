@@ -61,19 +61,19 @@ const BANDS: BandConfig[] = [
   {
     z: -4, count: 12, countCoarse: 6, opacity: 0.32,
     scaleMin: 3.4, scaleMax: 5.8, yMin: -1.15, yMax: 0.35,
-    force: 0.7, wind: 0.1, bob: 0.16,
+    force: 0.7, wind: 0.055, bob: 0.12,
   },
   // mid band
   {
     z: 0, count: 10, countCoarse: 5, opacity: 0.42,
     scaleMin: 2.4, scaleMax: 4.2, yMin: -1.1, yMax: 0.0,
-    force: 1.3, wind: 0.18, bob: 0.12,
+    force: 1.3, wind: 0.1, bob: 0.09,
   },
   // near band — fastest wind and strongest reaction
   {
     z: 3, count: 8, countCoarse: 4, opacity: 0.52,
     scaleMin: 1.7, scaleMax: 3.0, yMin: -1.15, yMax: -0.35,
-    force: 2.0, wind: 0.28, bob: 0.08,
+    force: 2.0, wind: 0.16, bob: 0.06,
   },
 ];
 
