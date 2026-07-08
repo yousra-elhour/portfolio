@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { optimizedImageUrl } from "../utils/preload";
 
 // Interactive cloud layer (three.js): fluid-distorted paintings.
 //
@@ -181,7 +182,7 @@ const LAYER_FRAG = /* glsl */ `
     vec2 vel = texture2D(uVel, vUv).xy;
     float stir = length(disp);
 
-    vec2 suv = (vUv - 0.5) / uZoom + 0.5 + uTranslate;
+    vec2 suv = (vUv - uTranslate - 0.5) / uZoom + 0.5;
     vec2 mapUv = suv * uUvScale + uUvOffset;
 
     // ambient vapor: gentle warps — the cloud shimmers in place
@@ -250,13 +251,14 @@ export default function CloudsGL() {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
       renderer.setSize(host.clientWidth, host.clientHeight);
       renderer.domElement.style.cssText =
-        "position:absolute;inset:0;width:100%;height:100%;";
+        "position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 0.9s ease-out;";
       renderer.autoClear = false;
       host.appendChild(renderer.domElement);
 
       const loadTexture = async (src: string) => {
         const img = new window.Image();
-        img.src = `/_next/image?url=${encodeURIComponent(src)}&w=2048&q=75`;
+        // same optimizer variant preload.ts warms — served straight from cache
+        img.src = optimizedImageUrl(src);
         await new Promise<void>((resolve, reject) => {
           if (img.complete && img.naturalWidth > 0) return resolve();
           img.onload = () => resolve();
@@ -428,6 +430,7 @@ export default function CloudsGL() {
       const clock = new THREE.Clock();
       let rafId = 0;
       let running = false;
+      let revealed = false;
 
       // smoothed pointer for the parallax (matches the old GSAP easing feel)
       const parallax = { x: 0, y: 0 };
@@ -506,10 +509,11 @@ export default function CloudsGL() {
             cfg.from.y[bp] + (cfg.to.y[bp] - cfg.from.y[bp]) * e -
             parallax.y * cfg.parallax[1];
 
-          // image translated right/down by (xPx, yPx) means sampling shifts
-          // the opposite way (screen uv is y-up, DOM px are y-down)
+          // the image's on-screen displacement in uv (screen uv is y-up,
+          // DOM px are y-down); the shader inverts it before the zoom, so
+          // positions match the old GSAP translate+scale exactly
           (material.uniforms.uTranslate.value as { set: (x: number, y: number) => void })
-            .set(-xPx / hostW, yPx / hostH);
+            .set(xPx / hostW, -yPx / hostH);
           material.uniforms.uZoom.value = scale;
 
           material.uniforms.uDisp.value = dispA.texture;
@@ -519,6 +523,10 @@ export default function CloudsGL() {
         renderer.setRenderTarget(null);
         renderer.clear();
         renderer.render(displayScene, simCamera);
+        if (!revealed) {
+          revealed = true;
+          renderer.domElement.style.opacity = "1";
+        }
 
         if (running) rafId = requestAnimationFrame(frame);
       };
