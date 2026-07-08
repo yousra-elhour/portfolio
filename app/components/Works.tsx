@@ -60,10 +60,11 @@ export default function Works() {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Enable hover after animation completes (500ms animation + small buffer)
+    // Enable hover shortly after mount — the old 600ms lockout made the
+    // first hover feel unresponsive.
     const timer = setTimeout(() => {
       setAnimationComplete(true);
-    }, 600);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -74,7 +75,7 @@ export default function Works() {
         {/* <div className=" absolute bg-black/30  h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none">
           {""}
         </div> */}
-        <div className="bg-gray-900">
+        <div className="page-bg-wrapper bg-gray-900">
           <div className={`relative isolate overflow-hidden  font-lead `}>
               <div 
                 className="absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none"
@@ -151,8 +152,17 @@ export default function Works() {
               <div className="works-item-container lg:mb-5 mb-3 flex justify-between items-start gap-20">
                 <TransitionLink
                   href={item.link}
-                  className="works-title lg:pl-4 md:pl-4 pl-2 lg:text-xl md:text-xl text-base font-sans tracking-[.4em]"
+                  className="works-title lg:pl-4 md:pl-4 pl-2 lg:text-xl md:text-xl text-base font-sans tracking-[.4em] flex items-center gap-4"
                 >
+                  {/* small inline thumbnail on touch screens, where the
+                      hover preview doesn't exist */}
+                  <Image
+                    src={item.image}
+                    alt=""
+                    width={64}
+                    height={44}
+                    className="lg:hidden rounded-md object-cover w-16 h-11 opacity-80 shrink-0"
+                  />
                   {item.title}
                 </TransitionLink>
 

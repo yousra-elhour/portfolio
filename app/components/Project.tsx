@@ -1,9 +1,11 @@
 "use client";
 
 import Image, { StaticImageData } from "next/image";
+import { useRouter } from "next/navigation";
 
 import Nav from "./Nav";
 import Link from "next/link";
+import TransitionLink from "./TransitionLink";
 
 // Statically imported images carry an automatic blurDataURL, giving the
 // Next.js blur-up placeholder instead of an empty box while they load.
@@ -16,6 +18,10 @@ const blurProps = (src: ProjectImage) =>
 
 interface ProjectProps {
   images?: ProjectImage[];
+  /** one-line captions matching images[] by index */
+  captions?: string[];
+  /** link to the next case study, shown at the end of the page */
+  next?: { title: string; href: string };
   additionalImages?: ProjectImage[];
   banner: ProjectImage;
   title: string;
@@ -38,6 +44,8 @@ interface ProjectProps {
 
 export default function Project({
   images,
+  captions,
+  next,
   title,
   techStack,
   description,
@@ -50,8 +58,32 @@ export default function Project({
   live,
   design,
 }: ProjectProps) {
+  const router = useRouter();
+
   return (
     <>
+      {/* Mobile back button — shared by every project page */}
+      <button
+        onClick={() => router.back()}
+        aria-label="Back"
+        className="fixed top-5 left-5 z-[60] lg:hidden flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 hover:bg-white/20 transition-all"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-4 h-4"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
+          />
+        </svg>
+        <span className="text-xs font-sans tracking-wider">BACK</span>
+      </button>
       <div className="relative overflow-hidden">
         <div 
           className="absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none"
@@ -62,7 +94,7 @@ export default function Project({
         >
           {""}
         </div>
-        <div className="bg-gray-900">
+        <div className="page-bg-wrapper bg-gray-900">
           <div className={`relative isolate overflow-hidden  font-lead `}>
             {/* Single optimized background image with hardware acceleration */}
             <Image
@@ -163,16 +195,24 @@ export default function Project({
               </div>
 
               {images?.map((image, index) => (
-                <Image
-                  width={800}
-                  height={800}
-                  loading="lazy"
-                  key={index}
-                  src={image}
-                  alt={`preview-${index}`}
-                  {...blurProps(image)}
-                  className=" mb-10 object-cover rounded-3xl  lg:w-[50cqw] md:w-[80cqw] w-[90cqw]"
-                />
+                <figure key={index} className="mb-10 lg:w-[50cqw] md:w-[80cqw] w-[90cqw]">
+                  <Image
+                    width={800}
+                    height={800}
+                    // first screenshot is usually in the first viewport —
+                    // eager-load it so scrolling never starts on a blank
+                    loading={index === 0 ? "eager" : "lazy"}
+                    src={image}
+                    alt={captions?.[index] ?? `preview-${index}`}
+                    {...blurProps(image)}
+                    className="object-cover rounded-3xl w-full"
+                  />
+                  {captions?.[index] && (
+                    <figcaption className="font-sans text-xs tracking-[.15em] text-white/60 mt-3 pl-1">
+                      {captions[index]}
+                    </figcaption>
+                  )}
+                </figure>
               ))}
 
               {imagesTitle?.map((item, index) => (
@@ -264,6 +304,17 @@ export default function Project({
                   />
                 ))}
               </div>
+
+              {next && (
+                <div className="pb-16 lg:w-[50cqw] md:w-[80cqw] w-[90cqw] flex justify-end">
+                  <TransitionLink
+                    href={next.href}
+                    className="font-sans lg:text-lg text-sm tracking-[.25em] border-b-2 pb-1 hover:text-gray-300 transition-colors"
+                  >
+                    NEXT — {next.title} →
+                  </TransitionLink>
+                </div>
+              )}
             </div>
           </div>
         </div>

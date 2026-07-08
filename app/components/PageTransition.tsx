@@ -264,8 +264,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
       // Check if we should show clouds for this transition
       const shouldShow = shouldShowClouds(globalPreviousPath, pathname);
       const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
-      const shouldShowProjectBack = shouldShowProjectBackTransition(globalPreviousPath, pathname);
-      const shouldShowHome = shouldShowHomeTransition(globalPreviousPath, pathname);
+      // Every other navigation (project -> works, anything -> home,
+      // works <-> about/contact, project -> project) gets the generic
+      // sky-bloom transition. The old "home transition" faded in over the
+      // bare body background, which read as a blank dark flash.
+      const shouldShowProjectBack = !shouldShow && !shouldShowProject;
+      const shouldShowHome = false;
       
       // Use a single state update to prevent multiple re-renders
       const newTransitionState = {

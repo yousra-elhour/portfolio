@@ -1,16 +1,34 @@
 "use client";
 
 import Image from "next/image";
-import image from "../../public/images/aaaaUntitled-1 1.jpg";
 import Link from "next/link";
 import Email from "./Email";
 import Nav from "./Nav";
-import { MoveUpRight } from "lucide-react";
+import { Check, Copy, MoveUpRight } from "lucide-react";
 import ForegroundClouds from "./ForegroundClouds";
 import { useState, useEffect } from "react";
 
+const EMAIL = "elhour.yousra1910@gmail.com";
+
+const SOCIALS = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/yousra-elhour-978952220/" },
+  { label: "Behance", href: "https://www.behance.net/kuroonekoob1fa" },
+  { label: "Artstation", href: "https://www.artstation.com/cirrusyk" },
+];
+
 export default function Works() {
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — the mailto link still works
+    }
+  };
 
   useEffect(() => {
     // Enable content visibility after animation completes (600ms delay like Works)
@@ -75,70 +93,51 @@ export default function Works() {
         </h1>
         <hr className="contact-divider border-0 border-white border-b w-full mb-5" />
 
-        <div className="lg:flex justify-between px-2">
-          <div className="mb-5  gap-4 items-baseline lg:flex md:flex hidden">
-            <p className="contact-label font-bold lg:text-md md:text-md text-sm">Email:</p>
-            <span>
-              {" "}
-              <Link
-                className="contact-text lg:text-md md:text-md text-sm"
-                href={"mailto:elhour.yousra1910@gmail.com"}
-              >
-                elhour.yousra1910@gmail.com
-              </Link>
-            </span>
-          </div>
+        <p className="font-sans tracking-[.2em] lg:text-base text-sm text-white/70 mb-10 max-w-xl leading-7">
+          Want to work together — or just talk tech, music, or art?
+        </p>
 
-          <div className="mb-5 flex gap-4">
-            <p className="contact-label font-bold lg:text-md md:text-md text-sm">
-              Social Media:
-            </p>
-            <ul className="contact-list flex flex-col gap-3 lg:text-md md:text-md text-sm">
-              <li className="flex items-baseline gap-2">
-                <Link
-                  target="_blank"
-                  href={"https://www.linkedin.com/in/yousra-elhour-978952220/"}
-                >
-                  <MoveUpRight className="contact-icon h-4 w-4 " />
-                </Link>
-                <Link
-                  target="_blank"
-                  href={"https://www.linkedin.com/in/yousra-elhour-978952220/"}
-                >
-                  LinkedIn
-                </Link>
-              </li>
-              <li className="flex items-baseline gap-2">
-                <Link
-                  target="_blank"
-                  href={"https://www.behance.net/kuroonekoob1fa"}
-                >
-                  <MoveUpRight className="contact-icon h-4 w-4 " />
-                </Link>
-                <Link
-                  target="_blank"
-                  href={"https://www.behance.net/kuroonekoob1fa"}
-                >
-                  Behance
-                </Link>
-              </li>
-              <li className="flex items-baseline gap-2">
-                <Link
-                  target="_blank"
-                  href={"https://www.artstation.com/cirrusyk"}
-                >
-                  <MoveUpRight className="contact-icon h-4 w-4 " />
-                </Link>
-                <Link
-                  target="_blank"
-                  href={"https://www.artstation.com/cirrusyk"}
-                >
-                  Artstation
-                </Link>
-              </li>
-            </ul>
-            </div>
-          </div>
+        {/* Email as the centerpiece: large, clickable, copyable — and
+            visible on every screen size (the old email row was hidden
+            below md) */}
+        <div className="flex items-center gap-5 mb-12 flex-wrap">
+          <Link
+            className="contact-text font-sans lg:text-3xl md:text-2xl text-base tracking-[.1em] border-b border-white/60 pb-2 hover:text-gray-300 transition-colors break-all"
+            href={`mailto:${EMAIL}`}
+          >
+            {EMAIL}
+          </Link>
+          <button
+            onClick={copyEmail}
+            aria-label="Copy email address"
+            className="flex items-center gap-2 border border-white/40 rounded-full px-4 py-2 text-xs font-sans tracking-[.2em] hover:bg-white/10 transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check className="h-3.5 w-3.5" /> COPIED
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" /> COPY
+              </>
+            )}
+          </button>
+        </div>
+
+        <ul className="contact-list flex flex-wrap gap-4">
+          {SOCIALS.map((social) => (
+            <li key={social.label}>
+              <Link
+                target="_blank"
+                href={social.href}
+                className="flex items-center gap-2 border border-white/40 rounded-full px-5 py-2.5 font-sans text-xs tracking-[.25em] hover:bg-white/10 transition-colors"
+              >
+                {social.label}
+                <MoveUpRight className="contact-icon h-3.5 w-3.5" />
+              </Link>
+            </li>
+          ))}
+        </ul>
         </div>
 
         {/* Foreground Clouds - always visible and animated */}

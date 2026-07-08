@@ -13,6 +13,13 @@ export default function WorksPage() {
     <>
       <Project
         images={[natureMain, natureHomepage, natureHouse, natureAdmin]}
+        captions={[
+          "Landing — find housing in the heart of the wilderness",
+          "Homepage — property listings and filters",
+          "Property page — calendar reservation and booking",
+          "Owner view — manage your own properties",
+        ]}
+        next={{ title: "AdmissionPedia", href: "/works/admissionPedia" }}
         banner={natureBanner}
         live="https://nature-housing.netlify.app/"
         title={"Nature Housing"}

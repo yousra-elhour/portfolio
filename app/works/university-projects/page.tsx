@@ -29,14 +29,14 @@ export default function WorksPage() {
     },
     {
       img: upTictactoe,
-      techStack: "Python, Pygame, Agile, UML Diagrams, ",
-      title: "Tic Tic Tac using AI algorithms ",
+      techStack: "Python, Pygame, Agile, UML Diagrams",
+      title: "Tic Tac Toe using AI algorithms",
       code: "https://github.com/yousra-elhour/tic-tac-toe/tree/master",
     },
 
     {
       img: upHr,
-      techStack: "Flutter, Firebase ",
+      techStack: "Flutter, Firebase",
       title: "Human Resources App ",
       code: "https://github.com/cirrusyk/HumanResourceApp/tree/master",
     },
@@ -54,6 +54,7 @@ export default function WorksPage() {
         I worked on a variety of projects, Object Oriented programming, web development, database work, and software engineering principles. 
         `}
         imagesTitle={projects}
+        next={{ title: "Vinyl E-Commerce", href: "/works/vinyl" }}
       />
 
       <Previous />

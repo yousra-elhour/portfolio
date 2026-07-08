@@ -433,3 +433,11 @@ body > div[style*="bottom"] {
     opacity: calc(var(--star-opacity, 0.6) * 0.3);
   }
 }
+
+/* Instant sky: a gradient sampled from the painted background sits under
+   the real bg image, so cold loads show dusk instead of near-black while
+   the large image decodes. */
+.hero-wrapper,
+.page-bg-wrapper {
+  background: linear-gradient(180deg, #6b7292 0%, #99879b 55%, #c9a09f 100%);
+}

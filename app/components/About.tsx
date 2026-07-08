@@ -96,7 +96,7 @@ I’m a software engineer with a big love for nature, music, and art. Before get
             English CV
           </Link>
           <Link
-            href={"/cv-francais (1).pdf"}
+            href={"/cv-francais.pdf"}
             download
             className="pb-2 border-b"
           >

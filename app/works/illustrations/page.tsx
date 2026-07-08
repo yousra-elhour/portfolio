@@ -27,6 +27,7 @@ export default function WorksPage() {
         title={"Digital Illustrations"}
         live="https://www.artstation.com/cirrusyk"
         techStack={"Photoshop, Blender, Illustrator"}
+        next={{ title: "University Projects", href: "/works/university-projects" }}
         description={`
           Before I became a software engineer, I was a digital artist with a passion for visual storytelling. 
           I loved creating immersive environments from natural landscapes to imaginative worlds. 

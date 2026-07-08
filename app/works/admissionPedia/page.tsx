@@ -27,6 +27,16 @@ export default function WorksPage() {
           apSchoolPage,
           apAddSchoolForm,
         ]}
+        captions={[
+          "Homepage — school admissions for schools and parents",
+          "Search — find schools with advanced filters",
+          "Add school — onboarding flow for schools",
+          "User dashboard — track applications",
+          "Sign up",
+          "School profile page",
+          "Add-school form",
+        ]}
+        next={{ title: "Digital Illustrations", href: "/works/illustrations" }}
         banner={apBanner}
         live="https://admissionpedia.dev/"
         design="https://www.behance.net/gallery/183533805/AdmissionPedia-Design"
@@ -39,7 +49,7 @@ export default function WorksPage() {
         `}
         additionalTitle="Branding"
         additionalDescription="Branding Graphics that I did for the company"
-        additionalImages={[apBanner, apBusiness, apEmail, apBrochure]}
+        additionalImages={[apBusiness, apEmail, apBrochure]}
       />
       <Previous />
     </>

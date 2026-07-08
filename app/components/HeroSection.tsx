@@ -3,10 +3,60 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import CloudsAnimation from "./CloudsAnimation";
 import CloudsGL from "./CloudsGL";
 import TransitionLink from "./TransitionLink";
 import FloatingStars from "./FloatingStars";
+
+// The touchable clouds are invisible as a feature — whisper it once, then
+// get out of the way after the visitor has actually stirred them.
+function CloudHint() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    let shown = false;
+    let travelled = 0;
+    let lastX = -1;
+    let lastY = -1;
+
+    const showTimer = setTimeout(() => {
+      shown = true;
+      setVisible(true);
+    }, 3000);
+
+    const onMove = (e: MouseEvent) => {
+      if (lastX >= 0) {
+        travelled += Math.hypot(e.clientX - lastX, e.clientY - lastY);
+      }
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (shown && travelled > 900) {
+        setVisible(false);
+        window.removeEventListener("mousemove", onMove);
+      }
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    return () => {
+      clearTimeout(showTimer);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, []);
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute bottom-10 inset-x-0 text-center z-[110] pointer-events-none font-sans text-[10px] tracking-[.5em] text-white/50 transition-opacity duration-[1500ms] ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      STIR THE CLOUDS
+    </div>
+  );
+}
 
 export default function HeroSection() {
   const containerVariants = {
@@ -141,6 +191,8 @@ export default function HeroSection() {
         <div className="absolute inset-0 z-[100] pointer-events-none">
           <CloudsGL />
         </div>
+
+        <CloudHint />
 
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
