@@ -591,48 +591,54 @@ export default function PageTransition({ children }: PageTransitionProps) {
         }, 0.2); // Slightly later start for smoother overlap
       }
     } else if (showProjectBackTransition && containerRef.current) {
-      // Project back transition: Smooth fade effect for going back to works
+      // Project back transition: same choreography as the forward project
+      // transition, playing over the cloud backdrop (rendered below the
+      // overlay) so the wash reads as sky instead of a flat gray flash.
       const overlay = projectOverlayRef.current;
-      
+
       if (overlay) {
         // Ensure content is hidden initially
-        gsap.set(contentWrapper, { opacity: 0, scale: 1.05, y: -10 });
-        
+        gsap.set(contentWrapper, { opacity: 0, scale: 0.95, y: 20 });
+
         // Add fallback timeout
         const fallbackTimeout = setTimeout(() => {
           gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
+          setShowProjectBackTransition(false);
         }, 1500);
-        
+
         animationTimeoutsRef.current.push(fallbackTimeout);
-        
+
         // Set initial states with hardware acceleration
-        gsap.set(overlay, { 
+        gsap.set(overlay, {
           opacity: 1,
-          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.5) 0%, rgba(255, 255, 255, 0.7) 40%, rgba(240, 248, 255, 0.9) 100%)",
+          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
           force3D: true
         });
-        
+
         // Create project back timeline
         const projectBackTl = gsap.timeline({
           onComplete: () => {
             clearTimeout(fallbackTimeout);
             setIsTransitioning(false);
+            // Unmount the overlay + backdrop once done (content is fully
+            // opaque above them by now, so this swap is invisible).
+            setShowProjectBackTransition(false);
           }
         });
         animationTimelinesRef.current.push(projectBackTl);
-        
+
         // Overlay fade out
         projectBackTl.to(overlay, {
           opacity: 0,
-          scale: 0.95,
+          scale: 1.1,
           duration: 0.6,
           ease: "power1.out",
           force3D: true
         }, 0);
-        
-        // Content emerges with slight downward motion
+
+        // Content emerges more smoothly
         projectBackTl.to(contentWrapper, {
           opacity: 1,
           scale: 1,
@@ -756,6 +762,25 @@ export default function PageTransition({ children }: PageTransitionProps) {
           <div 
             className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"
             style={{ zIndex: 6 }}
+          />
+        </div>
+      )}
+
+      {/* Cloud backdrop for the project back transition — the page content
+          is hidden while the overlay plays, so without this the gradient
+          washes over the dark body background instead of the sky. */}
+      {showProjectBackTransition && (
+        <div
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ zIndex: 12 }}
+        >
+          <Image
+            src="/clouds/bg.png"
+            alt=""
+            fill
+            sizes="100vw"
+            priority
+            className="h-full w-full object-cover"
           />
         </div>
       )}

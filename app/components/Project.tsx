@@ -46,7 +46,7 @@ export default function Project({
     <>
       <div className="relative overflow-hidden">
         <div 
-          className="absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md"
+          className="absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none"
           style={{ 
             backfaceVisibility: 'hidden', // Prevent flickering
             transform: 'translateZ(0)' // Force hardware acceleration

@@ -27,7 +27,7 @@ export default function Works() {
         <div className="page-bg-wrapper bg-gray-900" style={{ opacity: 1 }}>
           <div className={`relative isolate overflow-hidden  font-lead `}>
               <div 
-                className="page-backdrop absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md"
+                className="page-backdrop absolute bg-black/30 h-[100vh] top-0 right-0 left-0 bottom-0 z-10 backdrop-blur-md pointer-events-none"
                 style={{ 
                   opacity: 1, // Force immediate visibility
                   backfaceVisibility: 'hidden', // Prevent flickering
