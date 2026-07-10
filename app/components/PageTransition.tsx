@@ -1,6 +1,11 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+// The transition decision must hide the incoming page BEFORE the browser
+// paints it, or every navigation flashes one full-visibility frame.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import { gsap } from 'gsap';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -297,7 +302,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
     };
   }, [showClouds, isTransitioning]); // Added isTransitioning dependency
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Prevent double execution for the same pathname
     if (currentPathnameRef.current === pathname && isInitializedRef.current) {
       return;
@@ -394,6 +399,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
     
     animationTimeoutsRef.current.push(globalStateTimeout);
     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, children]);
 
   // Set up global capture function
@@ -865,7 +871,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
               style={{ 
                 zIndex: layer.zIndex,
                 willChange: 'transform', // Optimize for animations
-                backfaceVisibility: 'hidden' // Prevent flickering
+                backfaceVisibility: 'hidden', // Prevent flickering
+                // born already staged: without this the layer paints one
+                // frame untransformed (a full-screen flash) before GSAP
+                // positions it
+                transform: `translate3d(${cloudStageProps(index).x}px, ${cloudStageProps(index).y}px, 0) scale(${cloudStageProps(index).scale})`
               }}
             >
               <Image

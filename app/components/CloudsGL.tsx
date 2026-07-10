@@ -105,6 +105,42 @@ const PAGE_LAYERS: LayerConfig[] = [
 const breakpointIndex = (width: number) =>
   width < 768 ? 0 : width < 1024 ? 1 : 2;
 
+// One WebGL renderer for the whole session. CloudsGL mounts on every page,
+// and creating a context + compiling shaders + uploading 4 large textures
+// on each navigation landed exactly in the middle of the page transition —
+// the main source of transition jank. The renderer (with its compiled
+// program cache) and the textures persist; only the tiny sim render
+// targets are per-mount.
+type ThreeModule = typeof import("three");
+let sharedRenderer: import("three").WebGLRenderer | null = null;
+let sharedRendererFailed = false;
+const sharedTextures = new Map<
+  string,
+  Promise<{ texture: import("three").CanvasTexture; aspect: number }>
+>();
+
+function getSharedRenderer(THREE: ThreeModule) {
+  if (sharedRendererFailed) return null;
+  if (sharedRenderer) return sharedRenderer;
+  try {
+    sharedRenderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: false,
+      powerPreference: "low-power",
+    });
+  } catch {
+    sharedRendererFailed = true;
+    return null;
+  }
+  if (!sharedRenderer.capabilities.isWebGL2) {
+    sharedRenderer.dispose();
+    sharedRenderer = null;
+    sharedRendererFailed = true;
+    return null;
+  }
+  return sharedRenderer;
+}
+
 // Anchor as CSS calc parts (vw/vh) and px offsets for the sim loop.
 const anchorVwVh = (a?: LayerConfig["anchor"]) => ({
   vw: (a?.left ?? 0) - (a?.right ?? 0),
@@ -305,21 +341,9 @@ export default function CloudsGL({
       const host = hostRef.current;
       if (disposed || !host) return;
 
-      let renderer: InstanceType<typeof THREE.WebGLRenderer>;
-      try {
-        renderer = new THREE.WebGLRenderer({
-          alpha: true,
-          antialias: false,
-          powerPreference: "low-power",
-        });
-      } catch {
-        return; // no WebGL — the painted background clouds remain
-      }
-      if (!renderer.capabilities.isWebGL2) {
-        // half-float render targets are guaranteed in WebGL2; anything older
-        // keeps the static painted clouds.
-        renderer.dispose();
-        return;
+      const renderer = getSharedRenderer(THREE);
+      if (!renderer) {
+        return; // no WebGL2 — the painted placeholder clouds remain
       }
 
       const finePointer = window.matchMedia("(pointer: fine)").matches;
@@ -353,15 +377,22 @@ export default function CloudsGL({
 
       let paintings: { texture: InstanceType<typeof THREE.CanvasTexture>; aspect: number }[];
       try {
-        paintings = await Promise.all(LAYERS.map((l) => loadTexture(l.src)));
-      } catch {
-        renderer.dispose();
+        paintings = await Promise.all(
+          LAYERS.map((l) => {
+            let cached = sharedTextures.get(l.src);
+            if (!cached) {
+              cached = loadTexture(l.src);
+              sharedTextures.set(l.src, cached);
+            }
+            return cached;
+          })
+        );
+      } catch (err) {
+        sharedTextures.clear(); // allow a retry on the next mount
         renderer.domElement.remove();
         return;
       }
       if (disposed) {
-        paintings.forEach((p) => p.texture.dispose());
-        renderer.dispose();
         renderer.domElement.remove();
         return;
       }
@@ -671,8 +702,10 @@ export default function CloudsGL({
         velMaterial.dispose();
         dispMaterial.dispose();
         layerMaterials.forEach((m) => m.dispose());
-        paintings.forEach((p) => p.texture.dispose());
-        renderer.dispose();
+        // the renderer (compiled programs) and textures are shared across
+        // mounts — detach the canvas and reset its fade for the next page
+        renderer.setRenderTarget(null);
+        renderer.domElement.style.opacity = "0";
         renderer.domElement.remove();
       };
     })();
