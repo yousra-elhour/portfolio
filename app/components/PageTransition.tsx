@@ -475,7 +475,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
     const navTimer = setTimeout(() => {
       pendingNavRef.current?.();
       pendingNavRef.current = null;
-    }, 950);
+    }, 1050);
     animationTimeoutsRef.current.push(navTimer);
     animationTimelinesRef.current.push(coverTl);
     clouds.forEach((cloud, index) => {
@@ -483,7 +483,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       coverTl.to(cloud, {
         ...cloudCoverProps(index),
         opacity: cloudLayers[index].opacity,
-        duration: 0.6,
+        duration: 0.7,
         ease: "power2.in",
         force3D: true,
       }, (index % 4) * 0.05);
@@ -604,16 +604,20 @@ export default function PageTransition({ children }: PageTransitionProps) {
           }, delay);
         });
       } else {
-        // Already covering from the pre-navigation sweep: a gentle settle
-        // keeps the clouds alive while the new page emerges beneath them.
+        // Already covering from the pre-navigation sweep: continue the
+        // dive with the same momentum — the clouds keep flowing down and
+        // decelerate while the new page emerges above them. (A tiny settle
+        // here read as the transition stopping mid-flight.)
         clouds.forEach((cloud, index) => {
           if (!cloud) return;
+          const baseIndex = index % 4;
           entranceTl.to(cloud, {
-            y: `+=${24 + (index % 4) * 12}`,
-            duration: 1.6,
+            y: `+=${260 + baseIndex * 45}`,
+            x: `+=${index % 2 === 0 ? 45 : -45}`,
+            duration: 1.7,
             ease: "power2.out",
             force3D: true
-          }, 0);
+          }, baseIndex * 0.05);
         });
       }
       
@@ -626,7 +630,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         onComplete: () => {
           clearTimeout(fallbackTimeout);
         }
-      }, arrivedCovered ? 0.15 : "-=1.0");
+      }, arrivedCovered ? 0.3 : "-=1.0");
       
     } else if (showProjectTransition && containerRef.current) {
       // Improved project transition: Smoother fade effect
