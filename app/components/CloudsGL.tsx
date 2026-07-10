@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { optimizedImageUrl } from "../utils/preload";
 
 // Interactive cloud layer (three.js): fluid-distorted paintings.
@@ -77,6 +78,15 @@ const LAYERS: LayerConfig[] = [
 
 const breakpointIndex = (width: number) =>
   width < 768 ? 0 : width < 1024 ? 1 : 2;
+
+// Static stand-ins shown until the WebGL layer produces its first frame —
+// same textures at each layer's resting transform, so the handoff is a
+// simple crossfade instead of clouds popping in seconds after the page.
+const PLACEHOLDER_TRANSFORMS = LAYERS.map((cfg) => ({
+  src: cfg.src,
+  opacity: cfg.opacity,
+  className: `[transform:translate(${cfg.from.x[0]}px,${cfg.from.y[0]}px)_scale(${cfg.from.scale[0]})] md:[transform:translate(${cfg.from.x[1]}px,${cfg.from.y[1]}px)_scale(${cfg.from.scale[1]})] lg:[transform:translate(${cfg.from.x[2]}px,${cfg.from.y[2]}px)_scale(${cfg.from.scale[2]})]`,
+}));
 
 const QUAD_VERT = /* glsl */ `
   varying vec2 vUv;
@@ -225,6 +235,7 @@ const LAYER_FRAG = /* glsl */ `
 
 export default function CloudsGL() {
   const hostRef = useRef<HTMLDivElement>(null);
+  const placeholderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -533,6 +544,9 @@ export default function CloudsGL() {
         if (!revealed) {
           revealed = true;
           renderer.domElement.style.opacity = "1";
+          if (placeholderRef.current) {
+            placeholderRef.current.style.opacity = "0";
+          }
         }
 
         if (running) rafId = requestAnimationFrame(frame);
@@ -615,6 +629,29 @@ export default function CloudsGL() {
       className="absolute inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 30 }}
       aria-hidden="true"
-    />
+    >
+      <div
+        ref={placeholderRef}
+        className="absolute inset-0 transition-opacity ease-out"
+        style={{ transitionDuration: "900ms" }}
+      >
+        {PLACEHOLDER_TRANSFORMS.map((layer) => (
+          <div
+            key={layer.src}
+            className={`absolute inset-0 h-full w-full ${layer.className}`}
+          >
+            <Image
+              src={layer.src}
+              alt=""
+              fill
+              sizes="100vw"
+              loading="eager"
+              className="h-full w-full object-cover"
+              style={{ opacity: layer.opacity }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

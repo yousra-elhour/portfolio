@@ -58,6 +58,42 @@ const shouldShowHomeTransition = (fromPath: string, toPath: string): boolean => 
   return toPath === '/' && (fromPath === '/works' || fromPath === '/about' || fromPath === '/contact' || fromPath.startsWith('/works/'));
 };
 
+// Staging (above the viewport) and covering positions for the transition
+// cloud layers — shared by the pre-navigation cover sweep and the arrival
+// entrance so both use the exact same choreography.
+const cloudStageProps = (index: number) => {
+  const isOriginal = index < 4;
+  const baseIndex = index % 4;
+  const offsetMultiplier = isOriginal ? 1 : -1;
+  const scaleMultiplier = isOriginal ? 1 : 0.8;
+  switch (baseIndex) {
+    case 0:
+      return { x: 350 + offsetMultiplier * 100, y: -600, scale: 6 * scaleMultiplier };
+    case 1:
+      return { x: 300 + offsetMultiplier * 120, y: -650, scale: 5 * scaleMultiplier };
+    case 2:
+      return { x: 200 + offsetMultiplier * 140, y: -700, scale: 4 * scaleMultiplier };
+    default:
+      return { x: 100 + offsetMultiplier * 160, y: -750, scale: 3.5 * scaleMultiplier };
+  }
+};
+
+const cloudCoverProps = (index: number): { x?: number; y: number } => {
+  const isOriginal = index < 4;
+  const baseIndex = index % 4;
+  const offsetMultiplier = isOriginal ? 1 : -1;
+  switch (baseIndex) {
+    case 0:
+      return { x: 20 + offsetMultiplier * 150, y: 350 + offsetMultiplier * 50 };
+    case 1:
+      return { y: 120 + offsetMultiplier * 60 };
+    case 2:
+      return { x: -50 + offsetMultiplier * 20, y: -10 + offsetMultiplier * 40 };
+    default:
+      return { y: 320 + offsetMultiplier * 30 };
+  }
+};
+
 // Dusk-tinted bloom for the universal transition — the old white-blue
 // radial read as a harsh flash against the site's palette.
 const DUSK_GRADIENT =
@@ -90,6 +126,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
   // opaque cover instead of hard-cutting (which read as a flash).
   const [isCovering, setIsCovering] = useState(false);
   const coveringRef = useRef(false);
+  const cloudsActiveRef = useRef(false); // transition layers currently on screen
   const pendingNavRef = useRef<(() => void) | null>(null);
   const animationTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeouts
   const animationTimelinesRef = useRef<gsap.core.Timeline[]>([]); // Track all timelines
@@ -274,14 +311,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
     
     // If this is a navigation (not initial load)
     if (globalPreviousPath && globalPreviousPath !== pathname) {
-      // Check if we should show clouds for this transition
-      const shouldShow = shouldShowClouds(globalPreviousPath, pathname);
+      // The signature cloud sweep is THE site transition — every
+      // navigation uses it, except the works <-> project pair which keeps
+      // its softer wash (a "detail view" gesture rather than a journey).
       const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
-      // Every other navigation (project -> works, anything -> home,
-      // works <-> about/contact, project -> project) gets the generic
-      // sky-bloom transition. The old "home transition" faded in over the
-      // bare body background, which read as a blank dark flash.
-      const shouldShowProjectBack = !shouldShow && !shouldShowProject;
+      const shouldShowProjectBack = shouldShowProjectBackTransition(globalPreviousPath, pathname);
+      const shouldShow = !shouldShowProject && !shouldShowProjectBack;
       const shouldShowHome = false;
       
       // Use a single state update to prevent multiple re-renders
@@ -370,18 +405,19 @@ export default function PageTransition({ children }: PageTransitionProps) {
         }
       };
       window.beginPageCover = (href: string, navigate: () => void) => {
-        // the home cloud-burst and works -> project keep their own
-        // entrances; everything else covers first
+        // works <-> project keeps its wash (which handles its own timing);
+        // every other navigation covers with the cloud sweep first
         if (
           coveringRef.current ||
-          shouldShowClouds(pathname, href) ||
-          shouldShowProjectTransition(pathname, href)
+          shouldShowProjectTransition(pathname, href) ||
+          shouldShowProjectBackTransition(pathname, href)
         ) {
           navigate();
           return;
         }
         pendingNavRef.current = navigate;
         coveringRef.current = true;
+        setShowClouds(true); // mount the transition layers for the cover
         setIsCovering(true);
       };
     }
@@ -394,13 +430,14 @@ export default function PageTransition({ children }: PageTransitionProps) {
     };
   }, [pathname]);
 
-  // Play the cover: dusk bloom fades in over the outgoing page, then the
-  // pending navigation runs behind it. The reveal is handled by the normal
-  // transition path once the new route mounts.
+  // Play the cover: the transition clouds sweep in over the outgoing page
+  // (same choreography as the arrival entrance, just quicker), then the
+  // pending navigation runs behind them. The arrival entrance continues
+  // from the covering positions once the new route mounts.
   useEffect(() => {
     if (!isCovering) return;
-    const overlay = projectOverlayRef.current;
-    if (!overlay) {
+    const clouds = cloudRefs.current;
+    if (!clouds.some(Boolean)) {
       pendingNavRef.current?.();
       pendingNavRef.current = null;
       coveringRef.current = false;
@@ -409,27 +446,59 @@ export default function PageTransition({ children }: PageTransitionProps) {
     }
 
     const pathAtCover = currentPathnameRef.current;
-    gsap.killTweensOf(overlay);
-    gsap.set(overlay, { opacity: 0, scale: 1, background: DUSK_GRADIENT });
-    gsap.to(overlay, {
-      opacity: 1,
-      duration: 0.3,
-      ease: "power2.in",
+    gsap.ticker.wake();
+    clouds.forEach((cloud) => cloud && gsap.killTweensOf(cloud));
+    // fresh layers start above the screen; layers persisting from an
+    // earlier navigation sweep back to cover from wherever they drifted
+    if (!cloudsActiveRef.current) {
+      clouds.forEach((cloud, index) => {
+        if (!cloud) return;
+        gsap.set(cloud, {
+          ...cloudStageProps(index),
+          opacity: cloudLayers[index].opacity,
+          force3D: true,
+        });
+      });
+    }
+    cloudsActiveRef.current = true;
+
+    const coverTl = gsap.timeline({
       onComplete: () => {
         pendingNavRef.current?.();
         pendingNavRef.current = null;
       },
     });
+    // Never gate navigation solely on an animation callback: in throttled
+    // windows (occluded/background) rAF can tick once every few seconds,
+    // so back the cover with a wall-clock trigger. Both paths null the
+    // pending nav, so whichever fires first wins.
+    const navTimer = setTimeout(() => {
+      pendingNavRef.current?.();
+      pendingNavRef.current = null;
+    }, 950);
+    animationTimeoutsRef.current.push(navTimer);
+    animationTimelinesRef.current.push(coverTl);
+    clouds.forEach((cloud, index) => {
+      if (!cloud) return;
+      coverTl.to(cloud, {
+        ...cloudCoverProps(index),
+        opacity: cloudLayers[index].opacity,
+        duration: 0.6,
+        ease: "power2.in",
+        force3D: true,
+      }, (index % 4) * 0.05);
+    });
 
     // never leave the page stuck under the cover if navigation fails
     const safety = setTimeout(() => {
       if (coveringRef.current && currentPathnameRef.current === pathAtCover) {
-        gsap.to(overlay, { opacity: 0, duration: 0.3 });
         pendingNavRef.current = null;
         coveringRef.current = false;
         setIsCovering(false);
+        setShowClouds(false);
+        cloudsActiveRef.current = false;
       }
-    }, 2500);
+    }, 3000);
     return () => clearTimeout(safety);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCovering]);
@@ -475,7 +544,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
     }
     
     const contentWrapper = contentWrapperRef.current;
-    
+    gsap.ticker.wake();
+
     if (showClouds && containerRef.current) {
       // Animate clouds and content entrance
       const clouds = cloudRefs.current;
@@ -483,58 +553,29 @@ export default function PageTransition({ children }: PageTransitionProps) {
       // Ensure content is hidden initially
       gsap.set(contentWrapper, { opacity: 0, y: 0, scale: 1 });
       
-      // Set initial states for all cloud layers with hardware acceleration
-      clouds.forEach((cloud, index) => {
-        if (!cloud) return;
-        
-        const isOriginal = index < 4;
-        const baseIndex = index % 4;
-        const offsetMultiplier = isOriginal ? 1 : -1;
-        const scaleMultiplier = isOriginal ? 1 : 0.8;
-        
-        if (baseIndex === 0) {
-          // Start from HeroSection position for lowCloud3
-          gsap.set(cloud, { 
-            x: 350 + (offsetMultiplier * 100), 
-            y: -600, // Start off-screen for diving effect
-            scale: 6 * scaleMultiplier, 
+      // When arriving behind a cover (link click), the layers are already
+      // sweeping over the screen — the entrance continues from there.
+      // Otherwise (home burst, back/forward, direct load) stage them
+      // above the viewport for the diving entrance.
+      const arrivedCovered = coveringRef.current;
+      if (!arrivedCovered) {
+        clouds.forEach((cloud, index) => {
+          if (!cloud) return;
+          gsap.set(cloud, {
+            ...cloudStageProps(index),
             opacity: cloudLayers[index].opacity,
-            force3D: true // Hardware acceleration
+            force3D: true,
           });
-        } else if (baseIndex === 1) {
-          // Start from HeroSection position for lowCloud1  
-          gsap.set(cloud, { 
-            x: 300 + (offsetMultiplier * 120), 
-            y: -650, 
-            scale: 5 * scaleMultiplier, 
-            opacity: cloudLayers[index].opacity,
-            force3D: true
-          });
-        } else if (baseIndex === 2) {
-          // Start from HeroSection position for highCloud2
-          gsap.set(cloud, { 
-            x: 200 + (offsetMultiplier * 140), 
-            y: -700, 
-            scale: 4 * scaleMultiplier, 
-            opacity: cloudLayers[index].opacity,
-            force3D: true
-          });
-        } else if (baseIndex === 3) {
-          // Start from HeroSection position for highCloud1
-          gsap.set(cloud, { 
-            x: 100 + (offsetMultiplier * 160), 
-            y: -750, 
-            scale: 3.5 * scaleMultiplier, 
-            opacity: cloudLayers[index].opacity,
-            force3D: true
-          });
-        }
-      });
+        });
+      }
+      cloudsActiveRef.current = true;
       
       // Create entrance timeline with staggered cloud animations and hardware acceleration
       const entranceTl = gsap.timeline({
         onComplete: () => {
           setIsTransitioning(false);
+          coveringRef.current = false;
+          setIsCovering(false);
         }
       });
       animationTimelinesRef.current.push(entranceTl); // Track timeline
@@ -543,62 +584,38 @@ export default function PageTransition({ children }: PageTransitionProps) {
       const fallbackTimeout = setTimeout(() => {
         gsap.set(contentWrapper, { opacity: 1, y: 0 });
         setIsTransitioning(false);
+        coveringRef.current = false;
+        setIsCovering(false);
       }, 3500); // 3.5 seconds fallback
       
       animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
       
-      // Animate all clouds flowing downward to cover the screen (diving effect)
-      clouds.forEach((cloud, index) => {
-        if (!cloud) return;
-        
-        const layer = cloudLayers[index];
-        const isOriginal = index < 4;
-        const baseIndex = index % 4;
-        const offsetMultiplier = isOriginal ? 1 : -1;
-        
-        // Stagger timing for natural flow
-        const delay = (baseIndex * 0.08) + (isOriginal ? 0 : 0.04);
-        
-        if (baseIndex === 0) {
-          // Lower cloud flows down to cover screen
-          entranceTl.to(cloud, {    
-            x: 20 + (offsetMultiplier * 150),
-            y: 350 + (offsetMultiplier * 50),
-            opacity: layer.opacity,
+      if (!arrivedCovered) {
+        // Animate all clouds flowing downward to cover the screen
+        clouds.forEach((cloud, index) => {
+          if (!cloud) return;
+          const delay = ((index % 4) * 0.08) + (index < 4 ? 0 : 0.04);
+          entranceTl.to(cloud, {
+            ...cloudCoverProps(index),
+            opacity: cloudLayers[index].opacity,
             duration: 1.8,
             ease: "power2.out",
             force3D: true
           }, delay);
-        } else if (baseIndex === 1) {
-          // Another lower cloud flows down
-          entranceTl.to(cloud, { 
-            y: 120 + (offsetMultiplier * 60),
-            opacity: layer.opacity,
-            duration: 1.8,
+        });
+      } else {
+        // Already covering from the pre-navigation sweep: a gentle settle
+        // keeps the clouds alive while the new page emerges beneath them.
+        clouds.forEach((cloud, index) => {
+          if (!cloud) return;
+          entranceTl.to(cloud, {
+            y: `+=${24 + (index % 4) * 12}`,
+            duration: 1.6,
             ease: "power2.out",
             force3D: true
-          }, delay);
-        } else if (baseIndex === 2) {
-          // High cloud flows down
-          entranceTl.to(cloud, { 
-            y: -10 + (offsetMultiplier * 40),    
-            x: -50 + (offsetMultiplier * 20),      
-            opacity: layer.opacity,
-            duration: 1.8,
-            ease: "power2.out",
-            force3D: true
-          }, delay);
-        } else if (baseIndex === 3) {
-          // Top layer high cloud flows down
-          entranceTl.to(cloud, { 
-            y: 320 + (offsetMultiplier * 30),       
-            opacity: layer.opacity,
-            duration: 1.8,
-            ease: "power2.out",
-            force3D: true
-          }, delay);
-        }
-      });
+          }, 0);
+        });
+      }
       
       // Then animate content with a "emerging from clouds" effect
       entranceTl.to(contentWrapper, {
@@ -609,7 +626,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
         onComplete: () => {
           clearTimeout(fallbackTimeout);
         }
-      }, "-=1.0"); // Start content fade-in earlier for better diving effect
+      }, arrivedCovered ? 0.15 : "-=1.0");
       
     } else if (showProjectTransition && containerRef.current) {
       // Improved project transition: Smoother fade effect
@@ -770,6 +787,31 @@ export default function PageTransition({ children }: PageTransitionProps) {
     }
   }, [children, isTransitioning, showClouds, showProjectTransition, showProjectBackTransition, showHomeTransition]);
 
+  // GSAP's ticker can end up asleep with its internal wake-on-new-tween
+  // broken (observed after hidden-tab loads / bfcache restores): tweens
+  // then sit at progress 0 forever and only fallback timeouts hard-set
+  // final states — transitions look broken. A permanent no-op listener
+  // keeps the ticker running for the app's lifetime (one rAF no-op per
+  // frame), and explicit wakes cover tab-restore events.
+  useEffect(() => {
+    // In throttled windows GSAP's default lagSmoothing turns sparse rAF
+    // ticks into a near-frozen clock; with 0 the clock always tracks real
+    // time (a decorative cloud jumping after a hiccup is fine — a
+    // transition that never finishes is not).
+    gsap.ticker.lagSmoothing(0);
+    const heartbeat = () => {};
+    gsap.ticker.add(heartbeat);
+    const wake = () => gsap.ticker.wake();
+    wake();
+    window.addEventListener("pageshow", wake);
+    document.addEventListener("visibilitychange", wake);
+    return () => {
+      gsap.ticker.remove(heartbeat);
+      window.removeEventListener("pageshow", wake);
+      document.removeEventListener("visibilitychange", wake);
+    };
+  }, []);
+
   // Cleanup on unmount to prevent memory leaks and stuck animations
   useEffect(() => {
     return () => {
@@ -865,7 +907,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       )}
 
       {/* Project Transition Overlay - Optimized fade effect */}
-      {(showProjectTransition || showProjectBackTransition || isCovering) && (
+      {(showProjectTransition || showProjectBackTransition) && (
         <div 
           ref={projectOverlayRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
