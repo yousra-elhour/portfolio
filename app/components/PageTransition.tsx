@@ -58,10 +58,17 @@ const shouldShowHomeTransition = (fromPath: string, toPath: string): boolean => 
   return toPath === '/' && (fromPath === '/works' || fromPath === '/about' || fromPath === '/contact' || fromPath.startsWith('/works/'));
 };
 
+// Dusk-tinted bloom for the universal transition — the old white-blue
+// radial read as a harsh flash against the site's palette.
+const DUSK_GRADIENT =
+  "radial-gradient(circle at center, rgba(164, 156, 196, 0.92) 0%, rgba(205, 175, 178, 0.94) 45%, rgba(232, 213, 210, 0.97) 100%)";
+
 // Global function type declaration
 declare global {
   interface Window {
     captureCurrentPageForTransition?: () => void;
+    /** cover the current page, then run the navigation behind the cover */
+    beginPageCover?: (href: string, navigate: () => void) => void;
   }
 }
 
@@ -78,6 +85,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [showProjectTransition, setShowProjectTransition] = useState(false);
   const [showProjectBackTransition, setShowProjectBackTransition] = useState(false);
   const [showHomeTransition, setShowHomeTransition] = useState(false);
+  // Cover-first navigation: links fade a dusk bloom IN over the outgoing
+  // page, and only then push the route — so the swap happens behind an
+  // opaque cover instead of hard-cutting (which read as a flash).
+  const [isCovering, setIsCovering] = useState(false);
+  const coveringRef = useRef(false);
+  const pendingNavRef = useRef<(() => void) | null>(null);
   const animationTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // Track all timeouts
   const animationTimelinesRef = useRef<gsap.core.Timeline[]>([]); // Track all timelines
   const isInitializedRef = useRef(false); // Track if component is initialized
@@ -356,14 +369,70 @@ export default function PageTransition({ children }: PageTransitionProps) {
           globalPreviousPath = pathname;
         }
       };
+      window.beginPageCover = (href: string, navigate: () => void) => {
+        // the home cloud-burst and works -> project keep their own
+        // entrances; everything else covers first
+        if (
+          coveringRef.current ||
+          shouldShowClouds(pathname, href) ||
+          shouldShowProjectTransition(pathname, href)
+        ) {
+          navigate();
+          return;
+        }
+        pendingNavRef.current = navigate;
+        coveringRef.current = true;
+        setIsCovering(true);
+      };
     }
     
     return () => {
       if (typeof window !== 'undefined') {
         window.captureCurrentPageForTransition = undefined;
+        window.beginPageCover = undefined;
       }
     };
   }, [pathname]);
+
+  // Play the cover: dusk bloom fades in over the outgoing page, then the
+  // pending navigation runs behind it. The reveal is handled by the normal
+  // transition path once the new route mounts.
+  useEffect(() => {
+    if (!isCovering) return;
+    const overlay = projectOverlayRef.current;
+    if (!overlay) {
+      pendingNavRef.current?.();
+      pendingNavRef.current = null;
+      coveringRef.current = false;
+      setIsCovering(false);
+      return;
+    }
+
+    const pathAtCover = currentPathnameRef.current;
+    gsap.killTweensOf(overlay);
+    gsap.set(overlay, { opacity: 0, scale: 1, background: DUSK_GRADIENT });
+    gsap.to(overlay, {
+      opacity: 1,
+      duration: 0.3,
+      ease: "power2.in",
+      onComplete: () => {
+        pendingNavRef.current?.();
+        pendingNavRef.current = null;
+      },
+    });
+
+    // never leave the page stuck under the cover if navigation fails
+    const safety = setTimeout(() => {
+      if (coveringRef.current && currentPathnameRef.current === pathAtCover) {
+        gsap.to(overlay, { opacity: 0, duration: 0.3 });
+        pendingNavRef.current = null;
+        coveringRef.current = false;
+        setIsCovering(false);
+      }
+    }, 2500);
+    return () => clearTimeout(safety);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCovering]);
 
   // Handle browser back/forward navigation and continuous state capture
   useEffect(() => {
@@ -610,14 +679,18 @@ export default function PageTransition({ children }: PageTransitionProps) {
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
           setShowProjectBackTransition(false);
+          coveringRef.current = false;
+          setIsCovering(false);
         }, 1500);
 
         animationTimeoutsRef.current.push(fallbackTimeout);
 
-        // Set initial states with hardware acceleration
+        // Set initial states with hardware acceleration. When arriving
+        // covered (link click), the overlay is already at opacity 1 with
+        // this same gradient, so this is a no-op rather than a jump.
         gsap.set(overlay, {
           opacity: 1,
-          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
+          background: DUSK_GRADIENT,
           force3D: true
         });
 
@@ -629,6 +702,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
             // Unmount the overlay + backdrop once done (content is fully
             // opaque above them by now, so this swap is invisible).
             setShowProjectBackTransition(false);
+            coveringRef.current = false;
+            setIsCovering(false);
           }
         });
         animationTimelinesRef.current.push(projectBackTl);
@@ -790,12 +865,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
       )}
 
       {/* Project Transition Overlay - Optimized fade effect */}
-      {(showProjectTransition || showProjectBackTransition) && (
+      {(showProjectTransition || showProjectBackTransition || isCovering) && (
         <div 
           ref={projectOverlayRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{ 
-            zIndex: 15,
+            zIndex: 30, // above the page content so the cover can hide it
             backfaceVisibility: 'hidden', // Prevent flickering
             transform: 'translateZ(0)' // Force hardware acceleration
           }}
