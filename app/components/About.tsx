@@ -7,7 +7,7 @@ import Nav from "./Nav";
 import NowPlaying from "./NowPlaying";
 import TopAlbums from "./TopAlbums";
 import PhotoCarousel from "./PhotoCarousel";
-import ForegroundClouds from "./ForegroundClouds";
+import { PageClouds } from "./CloudsGL";
 import carouselPhoto2 from "../../public/images/carousel/2.jpeg";
 import carouselPhoto3 from "../../public/images/carousel/3.jpeg";
 import { useState, useEffect } from "react";
@@ -105,8 +105,9 @@ I’m a software engineer with a big love for nature, music, and art. Before get
           </div>
         </div>
 
-        {/* Foreground Clouds - always visible and animated */}
-        <ForegroundClouds />
+        {/* Foreground clouds — same layers as before, now fluid like the
+            hero's: stroke them and they tear into wisps */}
+        <PageClouds />
       </div>
       
       <Email />

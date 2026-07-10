@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { optimizedImageUrl } from "../utils/preload";
 
@@ -43,13 +43,15 @@ interface LayerConfig {
   duration: number;
   /** mouse parallax strength in px, like the old DOM layers */
   parallax: [number, number];
+  /** static inset of the layer, in viewport % (like the old DOM top/bottom/right) */
+  anchor?: { top?: number; bottom?: number; left?: number; right?: number };
 }
 
 // These are the site's existing foreground cloud layers — same textures,
 // same opacities, and the same slow wind choreography the GSAP version
 // used (HeroForegroundClouds). The GL version replaces those DOM layers
 // one-for-one and adds the fluid deformation on top of the drift.
-const LAYERS: LayerConfig[] = [
+const HERO_LAYERS: LayerConfig[] = [
   {
     src: "/clouds/lowCloud3.png", opacity: 0.7, strength: 1.0, turbulence: 0.003,
     from: { scale: [3, 2.5, 2], x: [0, 200, 350], y: [100, 150, 200] },
@@ -76,17 +78,48 @@ const LAYERS: LayerConfig[] = [
   },
 ];
 
+// The About/Contact/Works foreground clouds (ForegroundClouds), ported
+// 1:1: same textures, anchors, opacities, and the same gentle 25-31s
+// drift the GSAP version ran — now touchable like the hero's.
+const PAGE_LAYERS: LayerConfig[] = [
+  {
+    src: "/clouds/lowCloud2.png", opacity: 0.3, strength: 0.8, turbulence: 0.002,
+    from: { scale: [0.7, 0.7, 0.7], x: [0, 0, 0], y: [0, 0, 0] },
+    to: { scale: [0.76, 0.76, 0.76], x: [30, 30, 30], y: [8, 8, 8] },
+    duration: 31, parallax: [5, 3], anchor: { bottom: 20, right: 20 },
+  },
+  {
+    src: "/clouds/highCloud2.png", opacity: 0.25, strength: 0.3, turbulence: 0.0015,
+    from: { scale: [0.6, 0.6, 0.6], x: [0, 0, 0], y: [0, 0, 0] },
+    to: { scale: [0.55, 0.55, 0.55], x: [-30, -30, -30], y: [-12, -12, -12] },
+    duration: 28, parallax: [8, 5], anchor: { top: 10, right: 10 },
+  },
+  {
+    src: "/clouds/lowCloud3.png", opacity: 0.35, strength: 0.9, turbulence: 0.002,
+    from: { scale: [0.8, 0.8, 0.8], x: [0, 0, 0], y: [0, 0, 0] },
+    to: { scale: [0.85, 0.85, 0.85], x: [30, 30, 30], y: [12, 12, 12] },
+    duration: 25, parallax: [5, 3], anchor: { bottom: 5 },
+  },
+];
+
 const breakpointIndex = (width: number) =>
   width < 768 ? 0 : width < 1024 ? 1 : 2;
+
+// Anchor as CSS calc parts (vw/vh) and px offsets for the sim loop.
+const anchorVwVh = (a?: LayerConfig["anchor"]) => ({
+  vw: (a?.left ?? 0) - (a?.right ?? 0),
+  vh: (a?.top ?? 0) - (a?.bottom ?? 0),
+});
 
 // Static stand-ins shown until the WebGL layer produces its first frame —
 // same textures at each layer's resting transform, so the handoff is a
 // simple crossfade instead of clouds popping in seconds after the page.
-const PLACEHOLDER_TRANSFORMS = LAYERS.map((cfg) => ({
-  src: cfg.src,
-  opacity: cfg.opacity,
-  className: `[transform:translate(${cfg.from.x[0]}px,${cfg.from.y[0]}px)_scale(${cfg.from.scale[0]})] md:[transform:translate(${cfg.from.x[1]}px,${cfg.from.y[1]}px)_scale(${cfg.from.scale[1]})] lg:[transform:translate(${cfg.from.x[2]}px,${cfg.from.y[2]}px)_scale(${cfg.from.scale[2]})]`,
-}));
+// Inline styles, not Tailwind classes: runtime-built arbitrary classes
+// are invisible to the Tailwind compiler and silently don't exist.
+const placeholderTransform = (cfg: LayerConfig, bp: number) => {
+  const { vw, vh } = anchorVwVh(cfg.anchor);
+  return `translate(calc(${cfg.from.x[bp]}px + ${vw}vw), calc(${cfg.from.y[bp]}px + ${vh}vh)) scale(${cfg.from.scale[bp]})`;
+};
 
 const QUAD_VERT = /* glsl */ `
   varying vec2 vUv;
@@ -233,15 +266,39 @@ const LAYER_FRAG = /* glsl */ `
   }
 `;
 
-export default function CloudsGL() {
+// Drop-in replacement for the old ForegroundClouds on About/Contact/
+// Works: same composition, now fluid like the hero. Rendered just under
+// the page content (the GL layers share one plane, and putting all three
+// above the text read as a heavier veil than the original stack).
+export function PageClouds() {
+  return (
+    <div className="absolute inset-0 z-[45] pointer-events-none">
+      <CloudsGL layers={PAGE_LAYERS} />
+    </div>
+  );
+}
+
+export default function CloudsGL({
+  layers = HERO_LAYERS,
+}: {
+  layers?: LayerConfig[];
+}) {
   const hostRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+  const layersRef = useRef(layers);
+  layersRef.current = layers;
+  const [placeholderBp, setPlaceholderBp] = useState(2);
+
+  useEffect(() => {
+    setPlaceholderBp(breakpointIndex(window.innerWidth));
+  }, []);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let disposed = false;
     let cleanup: (() => void) | undefined;
+    const LAYERS = layersRef.current;
 
     (async () => {
       const THREE = await import("three");
@@ -520,12 +577,15 @@ export default function CloudsGL() {
           const e = 0.5 - 0.5 * Math.cos(Math.PI * lin);
 
           const scale = cfg.from.scale[bp] + (cfg.to.scale[bp] - cfg.from.scale[bp]) * e;
+          const anchor = anchorVwVh(cfg.anchor);
           const xPx =
             cfg.from.x[bp] + (cfg.to.x[bp] - cfg.from.x[bp]) * e +
-            parallax.x * cfg.parallax[0];
+            parallax.x * cfg.parallax[0] +
+            (anchor.vw / 100) * hostW;
           const yPx =
             cfg.from.y[bp] + (cfg.to.y[bp] - cfg.from.y[bp]) * e -
-            parallax.y * cfg.parallax[1];
+            parallax.y * cfg.parallax[1] +
+            (anchor.vh / 100) * hostH;
 
           // the image's on-screen displacement in uv (screen uv is y-up,
           // DOM px are y-down); the shader inverts it before the zoom, so
@@ -635,10 +695,11 @@ export default function CloudsGL() {
         className="absolute inset-0 transition-opacity ease-out"
         style={{ transitionDuration: "900ms" }}
       >
-        {PLACEHOLDER_TRANSFORMS.map((layer) => (
+        {layers.map((layer, i) => (
           <div
-            key={layer.src}
-            className={`absolute inset-0 h-full w-full ${layer.className}`}
+            key={`${layer.src}-${i}`}
+            className="absolute inset-0 h-full w-full"
+            style={{ transform: placeholderTransform(layer, placeholderBp) }}
           >
             <Image
               src={layer.src}

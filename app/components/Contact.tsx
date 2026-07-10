@@ -5,7 +5,7 @@ import Link from "next/link";
 import Email from "./Email";
 import Nav from "./Nav";
 import { Check, Copy, MoveUpRight } from "lucide-react";
-import ForegroundClouds from "./ForegroundClouds";
+import { PageClouds } from "./CloudsGL";
 import { useState, useEffect } from "react";
 
 const EMAIL = "elhour.yousra1910@gmail.com";
@@ -140,8 +140,9 @@ export default function Works() {
         </ul>
         </div>
 
-        {/* Foreground Clouds - always visible and animated */}
-        <ForegroundClouds />
+        {/* Foreground clouds — same layers as before, now fluid like the
+            hero's: stroke them and they tear into wisps */}
+        <PageClouds />
       </div>
       
       <Email />

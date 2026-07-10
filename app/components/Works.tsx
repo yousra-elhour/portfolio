@@ -13,7 +13,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Email from "./Email";
 import Nav from "./Nav";
-import ForegroundClouds from "./ForegroundClouds";
+import { PageClouds } from "./CloudsGL";
 
 
 export default function Works() {
@@ -178,8 +178,9 @@ export default function Works() {
           ))}
         </div>
 
-        {/* Foreground Clouds - always visible and animated */}
-        <ForegroundClouds />
+        {/* Foreground clouds — same layers as before, now fluid like the
+            hero's: stroke them and they tear into wisps */}
+        <PageClouds />
       </div>
       
       <Email />
