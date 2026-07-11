@@ -39,13 +39,12 @@ export default function TransitionLink({
       window.captureCurrentPageForTransition();
     }
 
-    // Cover the outgoing page first, then navigate behind the cover —
-    // swapping routes uncovered reads as a flash.
-    if (typeof window !== 'undefined' && window.beginPageCover) {
-      window.beginPageCover(href, () => router.push(href));
-    } else {
-      router.push(href);
-    }
+    // Navigate immediately — the original behavior. The clouds dive in on
+    // the new page exactly as they always did; the swap itself is kept
+    // flash-free by PageTransition hiding the incoming content before
+    // paint (a cover phase before the swap changed the animation's feel
+    // and was rejected).
+    router.push(href);
   };
 
   return (
