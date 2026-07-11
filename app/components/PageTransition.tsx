@@ -669,12 +669,14 @@ export default function PageTransition({ children }: PageTransitionProps) {
       const overlay = projectOverlayRef.current;
       
       if (overlay) {
-        // Ensure content is hidden initially
-        gsap.set(contentWrapper, { opacity: 0, scale: 0.95, y: 20 });
+        // Ensure content is hidden initially. No scale: the content tree
+        // contains the full-screen backdrop-blur veil, and animating scale
+        // on it forces a full re-blur every frame (the project-page lag).
+        gsap.set(contentWrapper, { opacity: 0, y: 20 });
         
         // Add fallback timeout
         const fallbackTimeout = setTimeout(() => {
-          gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
+          gsap.set(contentWrapper, { opacity: 1, y: 0 });
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
           setShowProjectTransition(false);
@@ -708,7 +710,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
         // Content emerges more smoothly
         projectTl.to(contentWrapper, {
           opacity: 1,
-          scale: 1,
           y: 0,
           duration: 0.8, // Slightly longer content fade
           ease: "power1.out", // Smoother easing
@@ -722,12 +723,14 @@ export default function PageTransition({ children }: PageTransitionProps) {
       const overlay = projectOverlayRef.current;
 
       if (overlay) {
-        // Ensure content is hidden initially
-        gsap.set(contentWrapper, { opacity: 0, scale: 0.95, y: 20 });
+        // Ensure content is hidden initially. No scale: the content tree
+        // contains the full-screen backdrop-blur veil, and animating scale
+        // on it forces a full re-blur every frame (the project-page lag).
+        gsap.set(contentWrapper, { opacity: 0, y: 20 });
 
         // Add fallback timeout
         const fallbackTimeout = setTimeout(() => {
-          gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
+          gsap.set(contentWrapper, { opacity: 1, y: 0 });
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
           setShowProjectBackTransition(false);
@@ -765,7 +768,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
         // Content emerges more smoothly
         projectBackTl.to(contentWrapper, {
           opacity: 1,
-          scale: 1,
           y: 0,
           duration: 0.8,
           ease: "power1.out",
@@ -915,25 +917,6 @@ export default function PageTransition({ children }: PageTransitionProps) {
           <div 
             className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"
             style={{ zIndex: 6 }}
-          />
-        </div>
-      )}
-
-      {/* Cloud backdrop for the project back transition — the page content
-          is hidden while the overlay plays, so without this the gradient
-          washes over the dark body background instead of the sky. */}
-      {showProjectBackTransition && (
-        <div
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 12 }}
-        >
-          <Image
-            src="/clouds/bg.png"
-            alt=""
-            fill
-            sizes="100vw"
-            priority
-            className="h-full w-full object-cover"
           />
         </div>
       )}
