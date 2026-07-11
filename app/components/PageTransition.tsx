@@ -138,6 +138,23 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const isInitializedRef = useRef(false); // Track if component is initialized
   const currentPathnameRef = useRef(pathname); // Track current pathname to prevent double execution
 
+  // The wash overlay must be covering before its first paint — mounting it
+  // empty and snapping it to full opacity in a post-paint effect flashed
+  // one bright frame on works <-> project navigations.
+  useIsomorphicLayoutEffect(() => {
+    if (
+      (showProjectTransition || showProjectBackTransition) &&
+      projectOverlayRef.current
+    ) {
+      gsap.set(projectOverlayRef.current, {
+        opacity: 1,
+        scale: 1,
+        background: DUSK_GRADIENT,
+        force3D: true,
+      });
+    }
+  }, [showProjectTransition, showProjectBackTransition]);
+
   // Clouds animation setup - restored full functionality with anti-flickering
   useEffect(() => {
     if (!containerRef.current || !showClouds) return;
@@ -556,8 +573,9 @@ export default function PageTransition({ children }: PageTransitionProps) {
       // Animate clouds and content entrance
       const clouds = cloudRefs.current;
       
-      // Ensure content is hidden initially
-      gsap.set(contentWrapper, { opacity: 0, y: 0, scale: 1 });
+      // Ensure content is hidden initially, with a slight offset so it
+      // rises into place as it fades in (a flat fade read less smooth)
+      gsap.set(contentWrapper, { opacity: 0, y: 24, scale: 1 });
       
       // When arriving behind a cover (link click), the layers are already
       // sweeping over the screen — the entrance continues from there.
@@ -567,9 +585,11 @@ export default function PageTransition({ children }: PageTransitionProps) {
       if (!arrivedCovered) {
         clouds.forEach((cloud, index) => {
           if (!cloud) return;
+          // staged and transparent: the layers fade in over the first
+          // moments of the dive instead of popping in at full opacity
           gsap.set(cloud, {
             ...cloudStageProps(index),
-            opacity: cloudLayers[index].opacity,
+            opacity: 0,
             force3D: true,
           });
         });
@@ -597,13 +617,19 @@ export default function PageTransition({ children }: PageTransitionProps) {
       animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
       
       if (!arrivedCovered) {
-        // Animate all clouds flowing downward to cover the screen
+        // Animate all clouds flowing downward to cover the screen,
+        // fading in as they start to move
         clouds.forEach((cloud, index) => {
           if (!cloud) return;
           const delay = ((index % 4) * 0.08) + (index < 4 ? 0 : 0.04);
           entranceTl.to(cloud, {
-            ...cloudCoverProps(index),
             opacity: cloudLayers[index].opacity,
+            duration: 0.45,
+            ease: "power1.out",
+            force3D: true
+          }, delay);
+          entranceTl.to(cloud, {
+            ...cloudCoverProps(index),
             duration: 1.8,
             ease: "power2.out",
             force3D: true
@@ -651,22 +677,21 @@ export default function PageTransition({ children }: PageTransitionProps) {
           gsap.set(contentWrapper, { opacity: 1, scale: 1, y: 0 });
           gsap.set(overlay, { opacity: 0 });
           setIsTransitioning(false);
+          setShowProjectTransition(false);
         }, 1500);
         
         animationTimeoutsRef.current.push(fallbackTimeout); // Track timeout
         
-        // Set initial states with hardware acceleration
-        gsap.set(overlay, { 
-          opacity: 1,
-          background: "radial-gradient(circle at center, rgba(135, 206, 235, 0.6) 0%, rgba(255, 255, 255, 0.8) 40%, rgba(240, 248, 255, 0.95) 100%)",
-          force3D: true // Hardware acceleration
-        });
-        
+        // (the overlay is already covering — set pre-paint in the layout
+        // effect above, dusk-tinted like the rest of the site)
+
         // Create smoother project entrance timeline
         const projectTl = gsap.timeline({
           onComplete: () => {
             clearTimeout(fallbackTimeout);
             setIsTransitioning(false);
+            // unmount the overlay once content is fully opaque above it
+            setShowProjectTransition(false);
           }
         });
         animationTimelinesRef.current.push(projectTl); // Track timeline
@@ -712,14 +737,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
 
         animationTimeoutsRef.current.push(fallbackTimeout);
 
-        // Set initial states with hardware acceleration. When arriving
-        // covered (link click), the overlay is already at opacity 1 with
-        // this same gradient, so this is a no-op rather than a jump.
-        gsap.set(overlay, {
-          opacity: 1,
-          background: DUSK_GRADIENT,
-          force3D: true
-        });
+        // (overlay already covering — set pre-paint in the layout effect)
 
         // Create project back timeline
         const projectBackTl = gsap.timeline({
