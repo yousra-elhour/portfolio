@@ -114,6 +114,11 @@ const breakpointIndex = (width: number) =>
 type ThreeModule = typeof import("three");
 let sharedRenderer: import("three").WebGLRenderer | null = null;
 let sharedRendererFailed = false;
+// The canvas is shared too — rapid navigation overlaps async inits, and a
+// stale init detaching/hiding the canvas after a newer mount claimed it
+// left pages with no clouds until a reload. Ownership is a simple counter.
+let canvasOwnerSeq = 0;
+let canvasOwner = 0;
 const sharedTextures = new Map<
   string,
   Promise<{ texture: import("three").CanvasTexture; aspect: number }>
@@ -334,6 +339,7 @@ export default function CloudsGL({
 
     let disposed = false;
     let cleanup: (() => void) | undefined;
+    const owner = ++canvasOwnerSeq;
     const LAYERS = layersRef.current;
 
     (async () => {
@@ -353,6 +359,7 @@ export default function CloudsGL({
         "position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 0.9s ease-out;";
       renderer.autoClear = false;
       host.appendChild(renderer.domElement);
+      canvasOwner = owner;
 
       const loadTexture = async (src: string) => {
         const img = new window.Image();
@@ -389,11 +396,11 @@ export default function CloudsGL({
         );
       } catch (err) {
         sharedTextures.clear(); // allow a retry on the next mount
-        renderer.domElement.remove();
+        if (canvasOwner === owner) renderer.domElement.remove();
         return;
       }
       if (disposed) {
-        renderer.domElement.remove();
+        // never touch the canvas here — a newer mount may own it by now
         return;
       }
 
@@ -703,10 +710,14 @@ export default function CloudsGL({
         dispMaterial.dispose();
         layerMaterials.forEach((m) => m.dispose());
         // the renderer (compiled programs) and textures are shared across
-        // mounts — detach the canvas and reset its fade for the next page
+        // mounts — detach the canvas and reset its fade for the next page,
+        // but only while this mount still owns it (a stale cleanup firing
+        // after a newer mount claimed the canvas must leave it alone)
         renderer.setRenderTarget(null);
-        renderer.domElement.style.opacity = "0";
-        renderer.domElement.remove();
+        if (canvasOwner === owner) {
+          renderer.domElement.style.opacity = "0";
+          renderer.domElement.remove();
+        }
       };
     })();
 

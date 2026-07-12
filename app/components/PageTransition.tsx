@@ -126,6 +126,13 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [showProjectTransition, setShowProjectTransition] = useState(false);
   const [showProjectBackTransition, setShowProjectBackTransition] = useState(false);
   const [showHomeTransition, setShowHomeTransition] = useState(false);
+  // Bumped on EVERY navigation that starts a transition. Two consecutive
+  // navigations of the same type (works -> about, then about -> contact)
+  // leave all the transition booleans unchanged — without this nonce the
+  // kickoff effect below never re-ran, the freshly killed timeline was
+  // never replaced, and the page sat behind an opaque wash forever (the
+  // "go back a lot and only the background shows" bug).
+  const [transitionNonce, setTransitionNonce] = useState(0);
   // Cover-first navigation: links fade a dusk bloom IN over the outgoing
   // page, and only then push the route — so the swap happens behind an
   // opaque cover instead of hard-cutting (which read as a flash).
@@ -153,7 +160,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
         force3D: true,
       });
     }
-  }, [showProjectTransition, showProjectBackTransition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showProjectTransition, showProjectBackTransition, transitionNonce]);
 
   // Clouds animation setup - restored full functionality with anti-flickering
   useEffect(() => {
@@ -333,12 +341,14 @@ export default function PageTransition({ children }: PageTransitionProps) {
     
     // If this is a navigation (not initial load)
     if (globalPreviousPath && globalPreviousPath !== pathname) {
-      // The signature cloud sweep is THE site transition — every
-      // navigation uses it, except the works <-> project pair which keeps
-      // its softer wash (a "detail view" gesture rather than a journey).
-      const shouldShowProject = shouldShowProjectTransition(globalPreviousPath, pathname);
-      const shouldShowProjectBack = shouldShowProjectBackTransition(globalPreviousPath, pathname);
-      const shouldShow = !shouldShowProject && !shouldShowProjectBack;
+      // The full cloud dive is the grand entrance, reserved for leaving
+      // the home page. Every other navigation gets the quick dusk wash —
+      // same vibe, about a second, and far lighter than mounting the
+      // eight dive layers on each hop.
+      const shouldShow = globalPreviousPath === '/';
+      const shouldShowProject =
+        !shouldShow && shouldShowProjectTransition(globalPreviousPath, pathname);
+      const shouldShowProjectBack = !shouldShow && !shouldShowProject;
       const shouldShowHome = false;
       
       // Use a single state update to prevent multiple re-renders
@@ -357,6 +367,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
       setShowProjectBackTransition(newTransitionState.showProjectBackTransition);
       setShowHomeTransition(newTransitionState.showHomeTransition);
       setDisplayedContent(newTransitionState.displayedContent);
+      setTransitionNonce((n) => n + 1);
       
       if (newTransitionState.isTransitioning) {
         // Hide content immediately before starting transition
@@ -804,7 +815,8 @@ export default function PageTransition({ children }: PageTransitionProps) {
         ease: "power2.out"
       });
     }
-  }, [isTransitioning, showClouds, showProjectTransition, showProjectBackTransition, showHomeTransition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTransitioning, showClouds, showProjectTransition, showProjectBackTransition, showHomeTransition, transitionNonce]);
 
   // Handle children prop changes separately to prevent double animations
   useEffect(() => {
