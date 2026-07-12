@@ -99,6 +99,17 @@ const cloudCoverProps = (index: number): { x?: number; y: number } => {
   }
 };
 
+// Where the dive leaves each layer once it finishes: the cover position
+// at the staged scale (the cover tween moves x/y only). The resting stack
+// on works/about/contact renders straight into this pose so pages that
+// arrive via the quick wash keep the same lingering clouds the dive
+// leaves behind.
+const cloudRestProps = (index: number) => {
+  const stage = cloudStageProps(index);
+  const cover = cloudCoverProps(index);
+  return { x: cover.x ?? stage.x, y: cover.y, scale: stage.scale };
+};
+
 // Dusk-tinted bloom for the universal transition — the old white-blue
 // radial read as a harsh flash against the site's palette.
 const DUSK_GRADIENT =
@@ -877,10 +888,17 @@ export default function PageTransition({ children }: PageTransitionProps) {
     };
   }, []);
 
+  // The lingering clouds are part of these pages' composition — they stay
+  // mounted whether the page arrived via the dive (which animates into
+  // this pose) or the quick wash (which renders it directly). Home keeps
+  // its own hero clouds, and project pages never had the lingering stack.
+  const showRestingClouds =
+    pathname === '/works' || pathname === '/about' || pathname === '/contact';
+
   return (
     <div ref={containerRef} className="relative overflow-hidden min-h-screen">
       {/* Background Cloud Animation Layer - Only show for non-home transitions */}
-      {showClouds && (
+      {(showClouds || showRestingClouds) && (
         <div className="absolute inset-0 w-full h-full pointer-events-none">
           {/* Main Background - same as HeroSection and pages */}
           <Image
@@ -900,14 +918,18 @@ export default function PageTransition({ children }: PageTransitionProps) {
                 if (el) cloudRefs.current[index] = el;
               }}
               className="absolute inset-0 h-full w-full overflow-hidden"
-              style={{ 
+              style={{
                 zIndex: layer.zIndex,
                 willChange: 'transform', // Optimize for animations
                 backfaceVisibility: 'hidden', // Prevent flickering
-                // born already staged: without this the layer paints one
-                // frame untransformed (a full-screen flash) before GSAP
-                // positions it
-                transform: `translate3d(${cloudStageProps(index).x}px, ${cloudStageProps(index).y}px, 0) scale(${cloudStageProps(index).scale})`
+                // born in the right pose before first paint: staged above
+                // the viewport (and transparent) when the dive is about to
+                // play, or directly at the dive's final resting position on
+                // wash arrivals — either way, no untransformed flash frame.
+                opacity: showClouds ? 0 : layer.opacity,
+                transform: showClouds
+                  ? `translate3d(${cloudStageProps(index).x}px, ${cloudStageProps(index).y}px, 0) scale(${cloudStageProps(index).scale})`
+                  : `translate3d(${cloudRestProps(index).x}px, ${cloudRestProps(index).y}px, 0) scale(${cloudRestProps(index).scale})`
               }}
             >
               <Image
